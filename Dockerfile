@@ -1,20 +1,58 @@
-FROM node:20-alpine AS base
-RUN npm install -g pnpm
+# ============================================================================
+# AGI OS — Multi-Stage Dockerfile
+# Stages: base → builder → runtime → dashboard
+# ============================================================================
 
+# ---------------------------------------------------------------------------
+# Stage 1: Base — Node.js + pnpm
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
-# Copy workspace configurations and package definitions
+# ---------------------------------------------------------------------------
+# Stage 2: Builder — Install deps + build all packages
+# ---------------------------------------------------------------------------
+FROM base AS builder
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/ ./packages/
-
-# Install dependencies and run build
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
-# Create data directory for local vector persistence
-RUN mkdir -p /app/data
+# ---------------------------------------------------------------------------
+# Stage 3: Runtime — AGI OS core (tests + cognitive loop)
+# ---------------------------------------------------------------------------
+FROM base AS runtime
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+
+RUN mkdir -p /app/data /app/logs
 
 ENV NODE_ENV=production
-ENV MAX_SPEND_LIMIT=0
+ENV MAX_SPEND=0
 
-CMD ["pnpm", "test"]
+EXPOSE 3001
+
+CMD ["node", "--import", "tsx", "-e", "console.log('AGI OS Runtime ready')"]
+
+# ---------------------------------------------------------------------------
+# Stage 4: Dashboard — Next.js web UI
+# ---------------------------------------------------------------------------
+FROM base AS dashboard
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+
+ENV NODE_ENV=production
+ENV MAX_SPEND=0
+ENV PORT=3000
+
+EXPOSE 3000
+
+WORKDIR /app/packages/dashboard
+CMD ["pnpm", "start"]

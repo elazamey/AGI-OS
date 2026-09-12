@@ -3,5 +3,11 @@ dist/
 *.tsbuildinfo
 .env
 .env.local
+.env.production
 reports/
 data/
+logs/
+.git/
+.github/
+*.md
+LICENSE

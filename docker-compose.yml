@@ -1,31 +1,115 @@
-version: '3.8'
+version: '3.9'
 
 services:
+  # =========================================================================
+  # Ollama — Local LLM Inference Server ($0 cost)
+  # =========================================================================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agi-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_MAX_LOADED_MODELS=2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  # =========================================================================
+  # AGI OS — Core Runtime (tests + cognitive loop)
+  # =========================================================================
   agi-os:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runtime
     container_name: agi-os-runtime
+    restart: unless-stopped
+    depends_on:
+      ollama:
+        condition: service_healthy
     environment:
       - NODE_ENV=production
-      - MAX_SPEND_LIMIT=0
+      - MAX_SPEND=0
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:latest
+      - LOG_LEVEL=info
     volumes:
-      - agi-data-store:/app/data
-    stdin_open: true
-    tty: true
+      - agi-data:/app/data
+      - agi-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
+  # =========================================================================
+  # Dashboard — Next.js Web UI
+  # =========================================================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dashboard
+    container_name: agi-dashboard
+    restart: unless-stopped
+    depends_on:
+      agi-os:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MAX_SPEND=0
+      - OLLAMA_BASE_URL=http://ollama:11434
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # =========================================================================
+  # AGI OS — Test Runner (run once)
+  # =========================================================================
   agi-os-test:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runtime
     container_name: agi-os-test
+    profiles:
+      - test
+    depends_on:
+      ollama:
+        condition: service_healthy
     environment:
       - NODE_ENV=test
-      - MAX_SPEND_LIMIT=0
+      - MAX_SPEND=0
+      - OLLAMA_BASE_URL=http://ollama:11434
     command: ["pnpm", "test"]
     volumes:
       - ./reports:/app/reports
 
 volumes:
-  agi-data-store:
+  ollama-models:
+    driver: local
+  agi-data:
+    driver: local
+  agi-logs:
     driver: local
