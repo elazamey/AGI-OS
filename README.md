@@ -4,7 +4,7 @@ An offline-first, zero-cost ($0 MAX_SPEND) local agentic framework built with st
 
 ## Core Architecture & Package Matrix
 
-AGI OS consists of 11 modular TypeScript packages built on top of Node.js and `pnpm` workspaces:
+AGI OS consists of 12 modular TypeScript packages built on top of Node.js and `pnpm` workspaces:
 
 | Package | Responsibility | Invariants & Benchmarks |
 | :--- | :--- | :--- |
@@ -19,6 +19,7 @@ AGI OS consists of 11 modular TypeScript packages built on top of Node.js and `p
 | **`@agi-os/governance`** | Policy interception, risk evaluation, and human approval gates | Intercept latency < 5ms per intent |
 | **`@agi-os/self-model`** | Capability tracking, confidence scoring, and telemetry snapshots | Continuous reliability metrics |
 | **`@agi-os/generalization`** | Cross-domain knowledge transfer and task pattern matching | 7-domain evaluation matrix |
+| **`@agi-os/dashboard`** | Web control center with 6 real-time monitoring pages | Next.js 14 + shadcn/ui |
 
 ## Strict System Invariants
 
@@ -35,9 +36,23 @@ AGI OS consists of 11 modular TypeScript packages built on top of Node.js and `p
 # Install workspace dependencies
 pnpm install
 
-# Run complete test suite (885 tests across 11 packages)
+# Run complete test suite (885 tests across 12 packages)
 pnpm test
+
+# Launch web dashboard on http://localhost:3000
+pnpm dashboard
 ```
+
+### Dashboard Pages
+
+| Route | Description |
+| :--- | :--- |
+| `/` | System overview: health score, test count, budget, latency |
+| `/governance` | Audit explorer: ALLOW/BLOCK/APPROVAL filter, risk bars |
+| `/loop` | EventLoop telemetry: phase indicator, iteration timeline |
+| `/memory` | Vector RAG: semantic search, stored lessons browser |
+| `/self-model` | Reliability tracker, domain confidence, tool capabilities |
+| `/reflection` | Lesson history, validation status, root cause analysis |
 
 ### Running with Docker
 
@@ -59,7 +74,7 @@ docker attach agi-os-runtime
 | **Vector Search Latency** | < 20ms | < 20ms (1,000 documents) |
 | **Memory Overhead** | < 50MB | < 35MB for 2,000 vectors |
 | **Cost Ceiling** | $0 | $0 MAX_SPEND enforced |
-| **Package Count** | 11 | 11 packages |
+| **Package Count** | 12 | 12 packages |
 
 ## Project Structure
 
@@ -76,7 +91,8 @@ agi-os/
 │   ├── providers/         # CostGuard, Router, adapters (Ollama, Gemini, etc.)
 │   ├── governance/        # Risk, Policy, Audit, Approval, Gateway
 │   ├── self-model/        # Capabilities, Limitations, Confidence, Reliability, Patterns
-│   └── generalization/    # Cross-domain testing harness (7 domains)
+│   ├── generalization/    # Cross-domain testing harness (7 domains)
+│   └── dashboard/         # Next.js 14 web control center (6 pages)
 ├── .github/workflows/     # CI/CD pipeline
 ├── Dockerfile             # Production container
 ├── docker-compose.yml     # Runtime + test services
