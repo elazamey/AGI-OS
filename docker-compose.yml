@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  agi-os:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agi-os-runtime
+    environment:
+      - NODE_ENV=production
+      - MAX_SPEND_LIMIT=0
+    volumes:
+      - agi-data-store:/app/data
+    stdin_open: true
+    tty: true
+
+  agi-os-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agi-os-test
+    environment:
+      - NODE_ENV=test
+      - MAX_SPEND_LIMIT=0
+    command: ["pnpm", "test"]
+    volumes:
+      - ./reports:/app/reports
+
+volumes:
+  agi-data-store:
+    driver: local
