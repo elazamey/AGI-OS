@@ -29,6 +29,9 @@
     "@agi-os/self-model": "workspace:*"
   },
   "devDependencies": {
+    "@agi-os/governance": "workspace:*",
+    "@agi-os/memory": "workspace:*",
+    "@agi-os/reflection": "workspace:*",
     "@types/node": "^20.11.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0",

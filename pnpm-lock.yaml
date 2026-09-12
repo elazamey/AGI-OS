@@ -249,6 +249,15 @@ importers:
         specifier: workspace:*
         version: link:../self-model
     devDependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/memory':
+        specifier: workspace:*
+        version: link:../memory
+      '@agi-os/reflection':
+        specifier: workspace:*
+        version: link:../reflection
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
