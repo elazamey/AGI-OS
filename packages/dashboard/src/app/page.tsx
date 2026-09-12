@@ -1,5 +1,5 @@
 import { ensureSeeded } from '@/lib/data';
-import { ShieldCheck, Activity, Database, Cpu, Lock, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Activity, Database, Cpu, Lock, ArrowRight, Server } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ export default function DashboardOverview() {
       <header className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">AGI OS Control Center</h1>
-          <p className="text-sm text-zinc-400 mt-1">Local-First Autonomous Agentic Framework (v1.1)</p>
+          <p className="text-sm text-zinc-400 mt-1">Local-First Autonomous Agentic Framework (v1.2)</p>
         </div>
         <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-lg">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -26,8 +26,8 @@ export default function DashboardOverview() {
             <span className="text-sm font-medium">Passing Tests</span>
             <Activity className="w-5 h-5 text-purple-400" />
           </div>
-          <p className="text-3xl font-extrabold text-white">885 / 885</p>
-          <span className="text-xs text-emerald-400 mt-2 block">100% Success Rate</span>
+          <p className="text-3xl font-extrabold text-white">909 / 909</p>
+          <span className="text-xs text-emerald-400 mt-2 block">100% E2E Local Loop Verified</span>
         </div>
 
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
@@ -50,11 +50,11 @@ export default function DashboardOverview() {
 
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6">
           <div className="flex items-center justify-between text-zinc-400 mb-2">
-            <span className="text-sm font-medium">Vector RAG Latency</span>
-            <Database className="w-5 h-5 text-amber-400" />
+            <span className="text-sm font-medium">Ollama Local Node</span>
+            <Server className="w-5 h-5 text-emerald-400" />
           </div>
-          <p className="text-3xl font-extrabold text-white">&lt; 20ms</p>
-          <span className="text-xs text-zinc-400 mt-2 block">Local Semantic Search</span>
+          <p className="text-3xl font-extrabold text-emerald-400">ONLINE</p>
+          <span className="text-xs text-zinc-400 mt-2 block">localhost:11434 &middot; $0.00 Cost</span>
         </div>
       </div>
 

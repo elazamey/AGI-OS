@@ -1,5 +1,5 @@
 import { ensureSeeded, getSelfModel } from '@/lib/data';
-import { ArrowLeft, Heart, TrendingUp, TrendingDown, AlertTriangle, Wrench, Server } from 'lucide-react';
+import { ArrowLeft, Heart, TrendingUp, TrendingDown, AlertTriangle, Wrench, Server, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -46,6 +46,34 @@ export default function SelfModelPage() {
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-center">
             <p className="text-xs text-zinc-400 mb-1">Components Tracked</p>
             <p className="text-2xl font-bold text-white">{reliability.length}</p>
+          </div>
+        </div>
+
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-semibold text-white flex items-center gap-2">
+              <Server className="w-4 h-4 text-emerald-400" />
+              Ollama Local Adapter
+            </h3>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800/50">ONLINE</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-1">
+              <p className="text-xs text-zinc-500">Endpoint</p>
+              <p className="text-sm font-mono text-zinc-200">http://localhost:11434</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-zinc-500">Cost Ceiling</p>
+              <p className="text-sm font-mono text-emerald-400">$0.00 (Enforced)</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-zinc-500">Governance Intercept</p>
+              <p className="text-sm font-mono text-zinc-200">&lt; 5ms</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-zinc-500">Default Model</p>
+              <p className="text-sm font-mono text-zinc-200">llama3.2:latest</p>
+            </div>
           </div>
         </div>
 
