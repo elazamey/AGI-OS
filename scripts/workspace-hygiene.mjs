@@ -104,6 +104,67 @@ for (const name of readdirSync(PKG_ROOT)) {
   }
 }
 
+// ---- docker-context -------------------------------------------------------
+// `docker build` failed in CI for two reasons that static checking catches: a
+// COPY source excluded by .dockerignore, and packages whose tsconfig extends a
+// root config that was never copied into the image.
+{
+  const dockerfile = join(ROOT, 'Dockerfile');
+  if (!existsSync(dockerfile)) {
+    fail('docker-context', '(root)', 'no Dockerfile at the repository root');
+  } else {
+    const ignoreFile = join(ROOT, '.dockerignore');
+    const ignores = existsSync(ignoreFile)
+      ? readFileSync(ignoreFile, 'utf8')
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l && !l.startsWith('#'))
+      : [];
+
+    const isIgnored = (p) =>
+      ignores.some((pattern) => {
+        const bare = pattern.replace(/\/$/, '');
+        if (pattern.endsWith('*')) return p.startsWith(pattern.slice(0, -1));
+        if (pattern.startsWith('*')) return p.endsWith(pattern.slice(1));
+        return p === bare || p.startsWith(bare + '/');
+      });
+
+    const builderCopies = [];
+    for (const line of readFileSync(dockerfile, 'utf8').split('\n')) {
+      const m = line.match(/^COPY\s+(.+?)\s+(\S+)\s*$/);
+      if (!m) continue;
+      if (m[1].startsWith('--from=')) continue; // resolved inside the image
+      for (const src of m[1].split(/\s+/)) {
+        builderCopies.push(src);
+        if (!existsSync(join(ROOT, src))) {
+          fail('docker-context', 'Dockerfile', `COPY source "${src}" does not exist in the build context`);
+        } else if (isIgnored(src)) {
+          fail('docker-context', 'Dockerfile', `COPY source "${src}" is excluded by .dockerignore — the build will fail`);
+        } else checks.passed++;
+      }
+    }
+
+    // A package tsconfig that extends a path outside the package must have that
+    // file copied into the image, or `pnpm build` fails inside Docker while
+    // passing locally.
+    const copiedSet = new Set(builderCopies.map((c) => c.replace(/\/$/, '')));
+    const coversRoot = copiedSet.has('tsconfig.json');
+    for (const name of readdirSync(PKG_ROOT)) {
+      const tsconfig = join(PKG_ROOT, name, 'tsconfig.json');
+      if (!existsSync(tsconfig)) continue;
+      const raw = readFileSync(tsconfig, 'utf8');
+      const m = raw.match(/"extends"\s*:\s*"(\.\.\/[^"]+)"/);
+      if (!m) continue;
+      const target = m[1].replace(/^\.\.\/\.\.\//, '');
+      if (!existsSync(join(ROOT, target))) {
+        fail('docker-context', name, `tsconfig extends "${m[1]}" but ${target} does not exist at the root`);
+      } else if (!coversRoot) {
+        fail('docker-context', name, `tsconfig extends "${m[1]}" but the Dockerfile never copies ${target} into the build stage`);
+      } else checks.passed++;
+    }
+  }
+}
+
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify({ checks: checks.passed, failures }, null, 2));
 } else {
