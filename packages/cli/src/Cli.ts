@@ -1,6 +1,8 @@
 import { generateId } from '@agi-os/kernel';
-import { LLMGateway, LLMGatewayConfig } from '@agi-os/llm-gateway';
-import { MissionRuntime, TaskDefinition } from '@agi-os/mission-runtime';
+import type { LLMGatewayConfig } from '@agi-os/llm-gateway';
+import { LLMGateway } from '@agi-os/llm-gateway';
+import type { TaskDefinition } from '@agi-os/mission-runtime';
+import { MissionRuntime } from '@agi-os/mission-runtime';
 
 export interface CliConfig {
   dataDir?: string;
@@ -141,7 +143,8 @@ export class Cli {
           missionId,
           prompt,
           status: 'created',
-          message: `Mission created successfully. Use 'agi mission-status ${missionId}' to track progress.`,
+          // Do not advertise a command that does not exist; `agi status` is real.
+          message: `Mission created successfully (id ${missionId}). Use 'agi status' for system state.`,
         },
       };
     } catch (error: any) {

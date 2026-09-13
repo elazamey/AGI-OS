@@ -4,8 +4,7 @@
 // ============================================================================
 
 import { generateId, now } from '@agi-os/kernel';
-import type { ActionIntent, ApprovalRequest, RiskAssessment, GovernanceConfig } from './types.js';
-import { PolicyDecision, ApprovalStatus } from './types.js';
+import type { ActionIntent, ApprovalRequest, RiskAssessment, GovernanceConfig , PolicyDecision} from './types.js';
 
 // ---------------------------------------------------------------------------
 // ApprovalManager — handles approval workflow

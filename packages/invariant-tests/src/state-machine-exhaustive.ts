@@ -1,4 +1,4 @@
-import { StateMachineTransition, ImpossibleState } from "./types.js";
+import type { StateMachineTransition, ImpossibleState } from "./types.js";
 
 export class StateMachineExhaustiveTester {
   private transitions: StateMachineTransition[] = [];

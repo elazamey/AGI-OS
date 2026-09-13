@@ -7,7 +7,6 @@ import {
   getParallelGroups
 } from '../src/task-graph.js';
 import { createTask } from '../src/task.js';
-import type { Task } from '../src/types.js';
 
 describe('TaskGraph', () => {
   describe('TaskGraph', () => {

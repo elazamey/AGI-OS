@@ -10,7 +10,7 @@ import {
   deserializeEvent,
   validateEvent
 } from '../src/event.js';
-import type { Event, EventType } from '../src/types.js';
+import type { Event } from '../src/types.js';
 
 describe('Event', () => {
   describe('createEvent', () => {

@@ -11,8 +11,6 @@ import type {
   ContextMemory,
   ContextFailure,
   MissionStateSnapshot,
-  WorldState,
-  WorldConstraint,
 } from './types.js';
 import type { WorldStateManager } from './world-state.js';
 

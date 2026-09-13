@@ -3,7 +3,6 @@
 // Generates N candidate plans using providers + deterministic fallback
 // ============================================================================
 
-import { generateId, now } from '@agi-os/kernel';
 import type {
   CognitivePlan,
   CognitiveProvider,

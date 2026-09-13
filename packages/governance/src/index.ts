@@ -26,7 +26,18 @@ export type {
 export { RiskEvaluator, createRiskEvaluator } from './risk.js';
 
 // Policy Engine
-export { PolicyEngine, createPolicyEngine } from './policy.js';
+export { PolicyEngine, createPolicyEngine, FAIL_CLOSED_RULE_ID } from './policy.js';
+
+// Governance vocabulary (canonical module/operation names + fail-closed helper)
+export {
+  GOVERNANCE_MODULES,
+  MUTATING_OPERATIONS,
+  READ_OPERATIONS,
+  normalizeModule,
+  normalizeOperation,
+  isMutatingOperation,
+} from './vocabulary.js';
+export type { GovernanceModule } from './vocabulary.js';
 
 // Audit Ledger
 export { AuditLedger, createAuditLedger } from './audit.js';

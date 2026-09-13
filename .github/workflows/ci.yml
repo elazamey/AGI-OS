@@ -1,0 +1,291 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: '8.15.0'
+  NODE_VERSION: '20'
+
+jobs:
+  # ===========================================================================
+  # 1. Install — cached workspace, frozen lockfile
+  # ===========================================================================
+  install:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache workspace state
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: nm-${{ github.run_id }}-${{ github.sha }}
+
+  # ===========================================================================
+  # 2. Typecheck — must pass before build (catches the @types/node class of bug)
+  # ===========================================================================
+  typecheck:
+    name: Typecheck all packages
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: nm-${{ github.run_id }}-${{ github.sha }}
+      - run: pnpm -r --no-bail typecheck
+
+  # ===========================================================================
+  # 3. Build — every package must compile (Dockerfile depends on this)
+  # ===========================================================================
+  build:
+    name: Build all packages
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: nm-${{ github.run_id }}-${{ github.sha }}
+
+      # Packages resolve each other through dist/, so build must precede test.
+      - run: pnpm -r build
+
+      - name: Cache build output
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/*/dist
+            packages/dashboard/.next/cache
+          key: build-${{ github.run_id }}-${{ github.sha }}
+
+  # ===========================================================================
+  # 4. Test — full workspace suite, no bail so one failure cannot hide others
+  # ===========================================================================
+  test:
+    name: Unit + integration tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/*/dist
+          key: build-${{ github.run_id }}-${{ github.sha }}
+
+      - run: pnpm test:all
+        env:
+          CI: true
+
+  # ===========================================================================
+  # 5. Lint
+  # ===========================================================================
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/*/dist
+          key: build-${{ github.run_id }}-${{ github.sha }}
+      - run: pnpm lint:all
+
+  # ===========================================================================
+  # 6. Security — real dependency audit (replaces the hardcoded 3-entry gate)
+  # ===========================================================================
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: nm-${{ github.run_id }}-${{ github.sha }}
+
+      # Blocking gate. Documented, expiring exceptions live in .pnpm-audit-allowlist.json
+      - name: Audit (high and above must be zero)
+        run: node scripts/audit-gate.mjs
+
+  # ===========================================================================
+  # 7. Sandbox escape regression — the PoCs from the readiness report must stay dead
+  # ===========================================================================
+  security-poc:
+    name: Adversarial PoC regression
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            packages/*/dist
+          key: build-${{ github.run_id }}-${{ github.sha }}
+      - name: Run hostile PoC suite (independent of source blocklists)
+        run: pnpm --filter @agi-os/sandbox-adversarial test -- tests/hostile.test.ts
+      - name: Adversarial gate — zero escapes on every layer and isolation level
+        run: node scripts/adversarial-gate.mjs
+      - name: Run governance bypass PoC suite
+        run: pnpm --filter @agi-os/skill-executor test -- tests/governance-bypass.test.ts
+
+  # ===========================================================================
+  # 8. Workspace hygiene — structural invariants that keep whole classes of the
+  #    readiness-review defects from returning. A missing @types/node was the
+  #    cause of four packages failing `tsc` on a fresh clone; an inert `bin`
+  #    entrypoint meant the shipped CLI did nothing at all.
+  # ===========================================================================
+  hygiene:
+    name: Workspace hygiene
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: build-${{ github.run_id }}-${{ github.sha }}
+      - name: Structural checks
+        run: node scripts/workspace-hygiene.mjs
+
+  # ===========================================================================
+  # 9. Docker image must build (it runs `pnpm build` inside)
+  # ===========================================================================
+  docker:
+    name: Docker image build
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          push: false
+          tags: agi-os:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Build dashboard image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: dashboard
+          push: false
+          tags: agi-os-dashboard:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===========================================================================
+  # Gate — single required check for branch protection
+  # ===========================================================================
+  ci-passed:
+    name: CI
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [typecheck, build, test, lint, security, security-poc, hygiene, docker]
+    steps:
+      - name: Verify all jobs succeeded
+        run: |
+          echo '${{ toJson(needs) }}' | node -e '
+            let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+              const n=JSON.parse(s);
+              const bad=Object.entries(n).filter(([,v])=>v.result!=="success").map(([k,v])=>k+"="+v.result);
+              if(bad.length){console.error("FAILED JOBS:",bad.join(", "));process.exit(1);}
+              console.log("All "+Object.keys(n).length+" jobs succeeded.");
+            });'

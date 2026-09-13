@@ -5,10 +5,7 @@ import type {
   ValidationStatus,
   StoredLesson,
   LessonDecayConfig,
-  LessonStatus,
   PruneResult,
-  LessonCategory,
-  LessonImpact,
 } from './types.js';
 
 export interface ExistingLesson {

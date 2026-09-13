@@ -1,4 +1,3 @@
-import { EventOrder } from "./types.js";
 
 export class EventOrderingTester {
   validateOrder(

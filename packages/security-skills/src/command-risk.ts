@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { CommandRiskResult } from './types.js';
 
 const DANGEROUS_COMMANDS = [

@@ -108,10 +108,8 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should navigate successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
-    // @ts-ignore
-    session['browser'] = {};
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['browser'] = {};
     
     const result = await skills.navigate('http://example.com');
     expect(result.success).toBe(true);
@@ -120,8 +118,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should click successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.click('button.submit');
     expect(result.success).toBe(true);
@@ -129,8 +126,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should fill successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.fill('input#name', 'John Doe');
     expect(result.success).toBe(true);
@@ -138,8 +134,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should take screenshot successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.screenshot();
     expect(result.success).toBe(true);
@@ -147,8 +142,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should extract text successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.extractText('p.content');
     expect(result.success).toBe(true);
@@ -156,8 +150,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should extract all text successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.extractAllText('li');
     expect(result.success).toBe(true);
@@ -165,8 +158,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should extract attribute successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.extractAttribute('a', 'href');
     expect(result.success).toBe(true);
@@ -174,8 +166,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should evaluate script successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.evaluate('return { result: "success" }');
     expect(result.success).toBe(true);
@@ -183,8 +174,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should wait for element successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.waitForElement('div.loaded', 5000);
     expect(result.success).toBe(true);
@@ -192,8 +182,7 @@ describe('BrowserSkills with mocked session', () => {
   });
 
   it('should select option successfully', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await skills.selectOption('select#country', 'US');
     expect(result.success).toBe(true);

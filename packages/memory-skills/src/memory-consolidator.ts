@@ -1,6 +1,4 @@
-import { now } from '@agi-os/kernel';
-import type { MemoryItem } from './types.js';
-import { MemoryStore } from './memory-store.js';
+import type { MemoryStore } from './memory-store.js';
 
 export class MemoryConsolidator {
   private store: MemoryStore;
@@ -11,7 +9,7 @@ export class MemoryConsolidator {
 
   consolidate(): { promoted: number; merged: number; forgotten: number } {
     let promoted = 0;
-    let merged = 0;
+    const merged = 0;
     let forgotten = 0;
 
     const working = this.store.getByTier('working');

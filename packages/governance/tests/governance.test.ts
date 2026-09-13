@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { GovernanceGateway } from '../src/governance-core.js';
 import { PolicyDecision, RiskLevel } from '../src/types.js';
 import type { ActionIntent } from '../src/types.js';
+import { PolicyEngine, FAIL_CLOSED_RULE_ID } from '../src/policy.js';
 
 describe('GovernanceGateway', () => {
   let gov: GovernanceGateway;
@@ -44,10 +45,26 @@ describe('GovernanceGateway', () => {
       expect(result.riskAssessment.riskLevel).toBe(RiskLevel.CRITICAL);
     });
 
-    it('should escalate HIGH risk fs write to approval', () => {
-      const intent: ActionIntent = { id: '6', module: 'fs', operation: 'write', target: './output.txt' };
+    it('escalates a HIGH-risk action that no policy matched', () => {
+      // Executing an arbitrary command is not covered by POL-005 (which blocks
+      // only known-destructive ones), so the policy would allow it; the risk
+      // model is what escalates it to REQUIRE_APPROVAL.
+      const intent: ActionIntent = { id: '6', module: 'exec', operation: 'execute', target: 'node build.js --prod' };
       const result = gov.intercept(intent);
       expect(result.decision).toBe(PolicyDecision.REQUIRE_APPROVAL);
+      expect(result.riskAssessment.riskLevel).toBe(RiskLevel.HIGH);
+      // With fail-closed on, the unmatched-mutation default produces this
+      // verdict; the pure risk-override path (policy ALLOW → escalated) is
+      // covered by "flags decisions escalated by risk when fail-closed is
+      // disabled" below.
+      expect(result.auditRecord.matchedRuleId).toBe(FAIL_CLOSED_RULE_ID);
+    });
+
+    it('does not escalate a workspace-local file write', () => {
+      const intent: ActionIntent = { id: '6b', module: 'fs', operation: 'write', target: './output.txt' };
+      const result = gov.intercept(intent);
+      expect(result.decision).toBe(PolicyDecision.ALLOW);
+      expect(result.auditRecord.matchedRuleId).toBe('POL-009');
     });
 
     it('should record audit for every intercept', () => {
@@ -55,10 +72,26 @@ describe('GovernanceGateway', () => {
       expect(gov.getAuditHistory()).toHaveLength(1);
     });
 
-    it('should flag overridden decisions', () => {
-      const intent: ActionIntent = { id: '8', module: 'fs', operation: 'write', target: './file.txt' };
+    it('requires approval for an unmatched filesystem write (fail closed)', () => {
+      // Before fail-closed enforcement this fell through to "no policy match —
+      // default allow", so an ungoverned write was permitted. It is now caught
+      // by the fail-closed default rather than by a risk override.
+      const intent: ActionIntent = { id: '8', module: 'fs', operation: 'write', target: '/tmp/agi-gov-probe/file.txt' };
       const result = gov.intercept(intent);
+      expect(result.decision).toBe(PolicyDecision.REQUIRE_APPROVAL);
+      expect(result.auditRecord.matchedRuleId).toBe(FAIL_CLOSED_RULE_ID);
+    });
+
+    it('flags decisions escalated by risk when fail-closed is disabled', () => {
+      // Isolates the risk-override path: with the fail-closed default off the
+      // policy says ALLOW and the RiskEvaluator is what escalates it.
+      const permissive = new GovernanceGateway({ policy: new PolicyEngine({ failClosed: false }) });
+      // No policy matches an ordinary exec, so the policy says ALLOW and the
+      // risk score alone must escalate it.
+      const intent: ActionIntent = { id: '8b', module: 'exec', operation: 'execute', target: 'node build.js --prod' };
+      const result = permissive.intercept(intent);
       expect(result.auditRecord.overridden).toBe(true);
+      expect(result.decision).toBe(PolicyDecision.REQUIRE_APPROVAL);
     });
   });
 
@@ -123,7 +156,8 @@ describe('GovernanceGateway', () => {
     });
 
     it('should return false for high-risk actions', () => {
-      expect(gov.wouldAllow({ id: 'w3', module: 'fs', operation: 'write', target: './file.txt' })).toBe(false);
+      expect(gov.wouldAllow({ id: 'w3', module: 'exec', operation: 'execute', target: 'node build.js' })).toBe(false);
+      expect(gov.wouldAllow({ id: 'w4', module: 'fs', operation: 'write', target: '/opt/outside.txt' })).toBe(false);
     });
   });
 

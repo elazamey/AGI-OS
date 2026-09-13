@@ -93,8 +93,7 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should click element', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.click({ selector: 'button' });
     expect(mockPage.click).toHaveBeenCalledWith('button', {
@@ -105,16 +104,14 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should fill input', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.fill({ selector: 'input', value: 'test' });
     expect(mockPage.fill).toHaveBeenCalledWith('input', 'test', { delay: undefined });
   });
 
   it('should take screenshot', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await actions.screenshot();
     expect(result).toBe(Buffer.from('screenshot').toString('base64'));
@@ -122,8 +119,7 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should extract text', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await actions.extract({ selector: 'div' });
     expect(result).toBe('text');
@@ -131,8 +127,7 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should extract attribute', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await actions.extract({ selector: 'a', attribute: 'href' });
     expect(result).toBe('attr');
@@ -140,8 +135,7 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should extract all text', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await actions.extractAll('div');
     expect(result).toEqual(['text1', 'text2']);
@@ -149,8 +143,7 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should evaluate script', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     const result = await actions.evaluate({ script: 'return 42' });
     expect(result).toBe(42);
@@ -158,8 +151,7 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should wait for selector', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.waitForSelector({ selector: 'div', timeout: 5000 });
     expect(mockPage.waitForSelector).toHaveBeenCalledWith('div', {
@@ -169,40 +161,35 @@ describe('BrowserActions with mocked page', () => {
   });
 
   it('should select option', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.selectOption('select', 'option1');
     expect(mockPage.selectOption).toHaveBeenCalledWith('select', 'option1');
   });
 
   it('should hover element', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.hover('button');
     expect(mockPage.hover).toHaveBeenCalledWith('button');
   });
 
   it('should focus element', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.focus('input');
     expect(mockPage.focus).toHaveBeenCalledWith('input');
   });
 
   it('should press key', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.press('Enter');
     expect(mockPage.keyboard.press).toHaveBeenCalledWith('Enter');
   });
 
   it('should type text', async () => {
-    // @ts-ignore
-    session['page'] = mockPage;
+    (session as unknown as Record<string, unknown>)['page'] = mockPage;
     
     await actions.type('hello', 100);
     expect(mockPage.keyboard.type).toHaveBeenCalledWith('hello', { delay: 100 });

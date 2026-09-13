@@ -57,8 +57,8 @@ export class FailureAnalyzer {
     outcome: MissionOutcome
   ): FailureCategory {
     const desc = discrepancy.description.toLowerCase();
-    const expected = discrepancy.expected.toLowerCase();
-    const actual = discrepancy.actual.toLowerCase();
+    discrepancy.expected.toLowerCase();
+    discrepancy.actual.toLowerCase();
 
     // Check for specific patterns
     if (desc.includes('missing') || desc.includes('not found') || desc.includes('unavailable')) {

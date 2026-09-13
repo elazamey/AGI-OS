@@ -3,7 +3,7 @@
 // Domain-level confidence tracking with trend analysis
 // ============================================================================
 
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import type { DomainConfidence, ConfidenceSample } from './types.js';
 
 // ---------------------------------------------------------------------------

@@ -8,11 +8,7 @@ import type {
   MemoryRecord,
   MemoryStore,
   ConsolidationResult,
-  WorkingMemoryContent,
-  EpisodicMemoryContent,
   SemanticMemoryContent,
-  ProceduralMemoryContent,
-  MetaMemoryContent,
 } from './types.js';
 
 // ---------------------------------------------------------------------------

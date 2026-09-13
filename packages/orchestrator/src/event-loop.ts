@@ -4,7 +4,7 @@
 // Crash-resistant, safe shutdown, iteration limits
 // ============================================================================
 
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import type {
   AgentState,
   IterationResult,

@@ -1,5 +1,5 @@
 import type { MemoryItem, MemoryQuery } from './types.js';
-import { MemoryStore } from './memory-store.js';
+import type { MemoryStore } from './memory-store.js';
 
 export class MemoryRetriever {
   private store: MemoryStore;
@@ -40,4 +40,4 @@ export class MemoryRetriever {
   }
 }
 
-import { MemoryTier } from './types.js';
+import type { MemoryTier } from './types.js';

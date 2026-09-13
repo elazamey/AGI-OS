@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
+import type {
   MissionManager,
-  MissionRunner,
+  MissionRunner} from '../src/mission.js';
+import {
   createMissionManager,
   createMissionRunner
 } from '../src/mission.js';
-import { TaskGraph, createTaskGraph } from '../src/task-graph.js';
-import { MissionEventStore } from '../src/mission-context.js';
-import type { Task, TaskExecutor, TaskResult, Mission } from '../src/types.js';
+import { createTaskGraph } from '../src/task-graph.js';
+import type { Task, TaskExecutor, TaskResult } from '../src/types.js';
 
 // ---------------------------------------------------------------------------
 // Integration Test Executor - Simulates real task execution
@@ -105,7 +105,7 @@ describe('Integration Tests', () => {
         dependencies: [task1.id]
       });
 
-      const task3 = manager.addTask(mission.id, 'Write tests', {
+      manager.addTask(mission.id, 'Write tests', {
         description: 'Write integration tests',
         priority: 'medium',
         dependencies: [task2.id]
@@ -144,7 +144,7 @@ describe('Integration Tests', () => {
 
       const task1 = manager.addTask(mission.id, 'Task A');
       const task2 = manager.addTask(mission.id, 'Task B');
-      const task3 = manager.addTask(mission.id, 'Task C', {
+      manager.addTask(mission.id, 'Task C', {
         dependencies: [task1.id, task2.id]
       });
 
@@ -189,8 +189,8 @@ describe('Integration Tests', () => {
     it('should handle mission cancellation', async () => {
       const mission = manager.createMission('Cancellation test');
 
-      const task1 = manager.addTask(mission.id, 'Long task');
-      const task2 = manager.addTask(mission.id, 'Another task');
+      manager.addTask(mission.id, 'Long task');
+      manager.addTask(mission.id, 'Another task');
 
       // Cancel before execution
       manager.cancelMission(mission.id);
@@ -231,7 +231,7 @@ describe('Integration Tests', () => {
     it('should maintain state integrity throughout mission', async () => {
       const mission = manager.createMission('State integrity');
       const task1 = manager.addTask(mission.id, 'Task 1');
-      const task2 = manager.addTask(mission.id, 'Task 2', { dependencies: [task1.id] });
+      manager.addTask(mission.id, 'Task 2', { dependencies: [task1.id] });
 
       const result = await runner.execute(mission.id);
 
@@ -262,7 +262,7 @@ describe('Integration Tests', () => {
       const taskA = manager.addTask(mission.id, 'Task A');
       const taskB = manager.addTask(mission.id, 'Task B', { dependencies: [taskA.id] });
       const taskC = manager.addTask(mission.id, 'Task C', { dependencies: [taskA.id] });
-      const taskD = manager.addTask(mission.id, 'Task D', { dependencies: [taskB.id, taskC.id] });
+      manager.addTask(mission.id, 'Task D', { dependencies: [taskB.id, taskC.id] });
 
       const result = await runner.execute(mission.id);
 
@@ -315,7 +315,7 @@ describe('Integration Tests', () => {
       const mission = manager.createMission('Evidence test');
       manager.addTask(mission.id, 'Task 1');
 
-      const result = await runner.execute(mission.id);
+      await runner.execute(mission.id);
 
       // Verify execution history exists
       const history = executor.getExecutionHistory();
@@ -375,7 +375,7 @@ describe('Integration Tests', () => {
       const mission = manager.createMission('Validation');
 
       const task1 = manager.addTask(mission.id, 'Task 1');
-      const task2 = manager.addTask(mission.id, 'Task 2', { dependencies: [task1.id] });
+      manager.addTask(mission.id, 'Task 2', { dependencies: [task1.id] });
 
       const graph = createTaskGraph(mission.tasks);
       const validation = graph.validate();

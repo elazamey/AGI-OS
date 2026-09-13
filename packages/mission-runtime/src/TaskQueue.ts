@@ -1,4 +1,4 @@
-import { TaskDefinition } from './MissionRuntime.js';
+import type { TaskDefinition } from './MissionRuntime.js';
 
 export class TaskQueue {
   private queue: TaskDefinition[] = [];

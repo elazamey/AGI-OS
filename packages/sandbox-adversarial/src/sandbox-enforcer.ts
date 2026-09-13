@@ -1,3 +1,8 @@
+// NOTE: SandboxEnforcer describes the *declared* capability boundary. It is not
+// a verdict oracle. The previous AdversarialSuite used checkCapability's answer
+// as the containment verdict, which meant the suite reported "blocked" for every
+// attempt without executing anything. AdversarialSuite now measures containment
+// from real execution output; this class is kept for policy introspection.
 import type { SandboxConfig, CapabilityBoundary } from './types.js';
 
 const DEFAULT_CONFIG: SandboxConfig = {
@@ -23,6 +28,12 @@ export class SandboxEnforcer {
       'filesystem.delete': () => ({ capability, allowed: false, reason: 'Delete not permitted in sandbox' }),
       'process.execute': () => ({ capability, allowed: false, reason: 'Process execution not permitted' }),
       'process.spawn': () => ({ capability, allowed: false, reason: 'Process spawning not permitted' }),
+      'filesystem.execute': () => ({ capability, allowed: false, reason: 'Execution is not a filesystem capability' }),
+      'network.execute': () => ({ capability, allowed: false, reason: 'Execution is not a network capability' }),
+      'exec.execute': () => ({ capability, allowed: false, reason: 'Execution is not permitted from inside the sandbox' }),
+      'injection.execute': () => ({ capability, allowed: false, reason: 'Code injection is never permitted' }),
+      'memory.execute': () => ({ capability, allowed: false, reason: 'Execution is not a memory capability' }),
+      'privilege.execute': () => ({ capability, allowed: false, reason: 'Privilege escalation is never permitted' }),
       'network.outbound': () => ({ capability, allowed: this.config.networkAccess, reason: this.config.networkAccess ? 'Network allowed' : 'Network access disabled' }),
       'network.inbound': () => ({ capability, allowed: false, reason: 'Inbound connections not permitted' }),
     };

@@ -5,7 +5,7 @@ export class FileSystemListSkill implements SkillHandler {
   readonly skillId = 'filesystem.list';
   readonly category = 'filesystem';
 
-  async execute(input: Record<string, unknown>, context: SkillExecutionContext): Promise<{
+  async execute(input: Record<string, unknown>, _context: SkillExecutionContext): Promise<{
     entries: Array<{ name: string; type: 'file' | 'directory'; size: number }>;
   }> {
     const dirPath = input.path as string;

@@ -32,8 +32,14 @@ export class GovernanceGateway {
     audit?: AuditLedger;
     approvals?: ApprovalManager;
     config?: Partial<GovernanceConfig>;
+    /**
+     * Directories the agent owns. Used by the risk model to tell a write inside
+     * the mission workspace from a write into the rest of the filesystem.
+     * Defaults to the process working directory.
+     */
+    workspaceRoots?: string[];
   }) {
-    this.risk = params?.risk ?? new RiskEvaluator();
+    this.risk = params?.risk ?? new RiskEvaluator({ workspaceRoots: params?.workspaceRoots });
     this.policy = params?.policy ?? new PolicyEngine();
     this.audit = params?.audit ?? new AuditLedger();
     this.approvals = params?.approvals ?? new ApprovalManager(params?.config);

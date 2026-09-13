@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { TerminalResult } from './types.js';
 
 export class TerminalExecutor {

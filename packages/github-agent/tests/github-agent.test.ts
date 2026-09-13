@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GitHubWebhookHandler, GitHubCapabilityMatrix } from '../src/index.js';
 
@@ -14,7 +15,7 @@ describe('GitHubWebhookHandler', () => {
 
   it('should verify valid signature', () => {
     const payload = '{"action":"opened"}';
-    const hmac = require('node:crypto').createHmac('sha256', 'test-secret');
+    const hmac = createHmac('sha256', 'test-secret');
     const signature = `sha256=${hmac.update(payload).digest('hex')}`;
 
     expect(handler.verifySignature(payload, signature)).toBe(true);

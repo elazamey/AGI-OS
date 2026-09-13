@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { TestResult } from './types.js';
 
 export class TestRunner {

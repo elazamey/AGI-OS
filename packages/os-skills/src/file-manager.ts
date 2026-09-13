@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import type { FileEntry } from './types.js';
 
 export class FileManager {

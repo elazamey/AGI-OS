@@ -10,9 +10,6 @@ import type {
   RetrievalResult,
   WorkingMemoryContent,
   EpisodicMemoryContent,
-  SemanticMemoryContent,
-  ProceduralMemoryContent,
-  MetaMemoryContent,
 } from './types.js';
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@ export interface PolicyCheckResult {
 }
 
 export class ExecutionPolicy {
-  async check(skill: SkillContract, missionId: string): Promise<PolicyCheckResult> {
+  async check(skill: SkillContract, _missionId: string): Promise<PolicyCheckResult> {
     if (skill.risk === 'CRITICAL') {
       return {
         allowed: true,

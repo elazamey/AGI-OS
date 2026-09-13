@@ -1,4 +1,5 @@
-import { GoldenMission, GoldenMissionConfig, MissionResult, StepResult, Evidence } from './GoldenMission.js';
+import type { GoldenMissionConfig, MissionResult, StepResult, Evidence } from './GoldenMission.js';
+import { GoldenMission } from './GoldenMission.js';
 import { generateId } from '@agi-os/kernel';
 
 export interface BugFixInput {
@@ -70,7 +71,7 @@ export class BugAutoFixMission extends GoldenMission {
         endTime: Date.now(),
         durationMs: Date.now() - startTime,
       };
-    } catch (error: any) {
+    } catch (_error: any) {
       return {
         missionId: this.config.id,
         success: false,

@@ -8,7 +8,6 @@ import {
   deserializeDecision,
   validateDecision
 } from '../src/decision.js';
-import type { Decision } from '../src/types.js';
 
 describe('Decision', () => {
   describe('createDecision', () => {

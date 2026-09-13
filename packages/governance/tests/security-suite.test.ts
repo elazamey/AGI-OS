@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateId, now } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 import { GovernanceGateway, PolicyDecision } from '@agi-os/governance';
 
 // ===========================================================================

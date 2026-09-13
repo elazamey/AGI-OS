@@ -32,7 +32,7 @@ export class AgentBrainTaskExecutor implements TaskExecutor {
     };
   }
 
-  canExecute(task: Task): boolean {
+  canExecute(_task: Task): boolean {
     return true;
   }
 }

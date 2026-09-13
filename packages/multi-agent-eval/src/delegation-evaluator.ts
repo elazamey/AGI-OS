@@ -1,4 +1,4 @@
-import { DelegationResult } from "./types.js";
+import type { DelegationResult } from "./types.js";
 
 export class DelegationEvaluator {
   evaluateDelegation(

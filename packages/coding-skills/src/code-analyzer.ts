@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { CodeFile, ReviewComment } from './types.js';
 
 export class CodeAnalyzer {

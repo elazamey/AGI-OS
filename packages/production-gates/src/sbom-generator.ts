@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { SBOMEntry } from './types.js';
 
 export class SBOMGenerator {

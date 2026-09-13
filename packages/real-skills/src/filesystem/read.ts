@@ -5,7 +5,7 @@ export class FileSystemReadSkill implements SkillHandler {
   readonly skillId = 'filesystem.read';
   readonly category = 'filesystem';
 
-  async execute(input: Record<string, unknown>, context: SkillExecutionContext): Promise<{
+  async execute(input: Record<string, unknown>, _context: SkillExecutionContext): Promise<{
     content: string;
     size: number;
     lastModified: string;

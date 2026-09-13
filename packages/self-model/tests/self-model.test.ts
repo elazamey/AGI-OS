@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SelfModel } from '../src/self-model.js';
-import type { SelfModelUpdateEvent } from '../src/types.js';
 
 describe('SelfModel', () => {
   let model: SelfModel;

@@ -1,5 +1,5 @@
 import { ensureSeeded, getSelfModel } from '@/lib/data';
-import { ArrowLeft, Heart, TrendingUp, TrendingDown, AlertTriangle, Wrench, Server, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Heart, TrendingUp, TrendingDown, Wrench, Server } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';

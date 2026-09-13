@@ -3,17 +3,59 @@
 // Evaluates intents against a strict constitution
 // ============================================================================
 
-import { generateId, now } from '@agi-os/kernel';
-import type { ActionIntent, PolicyRule, PolicyCondition } from './types.js';
+import { isAbsolute } from 'node:path';
+import { now } from '@agi-os/kernel';
+import type { ActionIntent, PolicyRule } from './types.js';
 import { PolicyDecision } from './types.js';
+import { normalizeModule, normalizeOperation, isMutatingOperation } from './vocabulary.js';
+
+/** Synthetic rule id recorded when the fail-closed default makes the decision. */
+export const FAIL_CLOSED_RULE_ID = 'FAIL-CLOSED';
+
+/**
+ * Multi-token dangerous phrases. Substring matching is correct for these —
+ * they are specific enough not to occur by accident.
+ */
+const DANGEROUS_PHRASES = [
+  'rm -rf', 'rm -fr', 'chmod 777', 'chown root', 'fork bomb',
+  'docker run --privileged', 'mkfs', ':(){', 'eval(', 'new function',
+  'shutdown', 'reboot', '> /dev/sda', 'wget', 'curl',
+] as const;
+
+/**
+ * Single-token dangerous commands. These MUST be matched on word boundaries:
+ * a naive `includes('format')` blocked every command containing the word
+ * "information", and `includes('dd')` blocked "added" and "address".
+ */
+const DANGEROUS_WORDS = ['dd', 'format', 'crontab', 'fdisk', 'parted', 'shred'] as const;
+
+/** True when a command string contains a known destructive operation. */
+export function matchesDangerousCommand(target: unknown): boolean {
+  if (typeof target !== 'string' || target.length === 0) return false;
+  const lower = target.toLowerCase();
+
+  for (const phrase of DANGEROUS_PHRASES) {
+    if (lower.includes(phrase)) return true;
+  }
+  for (const word of DANGEROUS_WORDS) {
+    if (new RegExp(`(^|[^a-z0-9])${word}([^a-z0-9]|$)`).test(lower)) return true;
+  }
+  return false;
+}
 
 // ---------------------------------------------------------------------------
 // PolicyEngine — first-match-wins rule evaluation
 // ---------------------------------------------------------------------------
 export class PolicyEngine {
   private rules: PolicyRule[] = [];
+  /** Unmatched state-changing operations require approval instead of allowing. */
+  private failClosed = true;
+  /** A rule whose condition throws requires approval instead of being skipped. */
+  private failClosedOnRuleError = true;
 
-  constructor() {
+  constructor(options?: { failClosed?: boolean; failClosedOnRuleError?: boolean }) {
+    this.failClosed = options?.failClosed ?? true;
+    this.failClosedOnRuleError = options?.failClosedOnRuleError ?? true;
     this.initializeDefaultPolicies();
   }
 
@@ -77,9 +119,7 @@ export class PolicyEngine {
       description: 'Block execution of shell-dangerous commands',
       condition: (i) => {
         if (i.module !== 'exec' && i.module !== 'process') return false;
-        const dangerous = ['rm -rf', 'mkfs', 'dd', 'format', ':(){', 'fork bomb', 'chmod 777', 'chown root', 'crontab', 'docker run --privileged', 'eval(', 'new Function'];
-        const target = i.target.toLowerCase();
-        return dangerous.some((d) => target.includes(d));
+        return matchesDangerousCommand(i.target);
       },
       enforce: PolicyDecision.BLOCK,
       priority: 100,
@@ -104,6 +144,43 @@ export class PolicyEngine {
       priority: 85,
       enabled: true,
       tags: ['filesystem', 'sandbox'],
+    });
+
+    // POL-008: Sandbox execution is permitted *because* it runs inside an
+    // enforced isolation boundary (see @agi-os/sandbox). Declared explicitly so
+    // it never depends on the fail-closed default, and so an operator can
+    // disable or escalate it like any other rule.
+    this.addRule({
+      id: 'POL-008',
+      description: 'Allow execution inside an enforced isolation boundary',
+      condition: (i) => i.module === 'sandbox',
+      enforce: PolicyDecision.ALLOW,
+      priority: 70,
+      enabled: true,
+      tags: ['sandbox', 'exec'],
+    });
+
+    // POL-009: Allow filesystem writes that are workspace-relative and free of
+    // traversal. Absolute paths are deliberately NOT matched here: they fall
+    // through to POL-006 (blocked outside the workspace) or to the fail-closed
+    // default (approval required). Without this rule the fail-closed default
+    // would escalate every ordinary workspace write to REQUIRE_APPROVAL.
+    this.addRule({
+      id: 'POL-009',
+      description: 'Allow workspace-relative, traversal-free filesystem writes',
+      condition: (i) => {
+        if (i.module !== 'fs') return false;
+        if (!['write', 'create', 'append', 'modify', 'delete', 'move', 'copy', 'rename'].includes(i.operation)) return false;
+        const target = i.target;
+        if (typeof target !== 'string' || target.length === 0) return false;
+        if (/(^|[\\/])\.\.([\\/]|$)/.test(target)) return false;   // traversal
+        if (isAbsolute(target)) return false;                            // absolute → POL-006 / fail-closed
+        return true;
+      },
+      enforce: PolicyDecision.ALLOW,
+      priority: 50,
+      enabled: true,
+      tags: ['filesystem', 'workspace'],
     });
 
     // POL-007: Allow all reads by default
@@ -166,20 +243,52 @@ export class PolicyEngine {
   // ---- Evaluation --------------------------------------------------------
 
   evaluateIntent(intent: ActionIntent): { decision: PolicyDecision; matchedRuleId: string | null } {
+    // Canonicalise the vocabulary before matching. Policies are written against
+    // 'fs' / 'exec' / 'network'; callers have historically sent 'filesystem',
+    // 'terminal', 'filesystem.read'. Without this step those policies simply
+    // never fire and the action is allowed by default.
+    const normalized: ActionIntent = {
+      ...intent,
+      module: normalizeModule(intent.module),
+      operation: normalizeOperation(intent.operation),
+    };
+
     const enabledRules = this.getEnabledRules();
 
     for (const rule of enabledRules) {
       try {
-        if (rule.condition(intent)) {
+        // Rules see the canonical intent; a rule written against a legacy alias
+        // still works because the raw fields are preserved on `intent`.
+        if (rule.condition(normalized) || rule.condition(intent)) {
           return { decision: rule.enforce, matchedRuleId: rule.id };
         }
       } catch {
-        // If condition throws, skip this rule
+        // A throwing condition must not become an implicit allow.
+        if (this.failClosedOnRuleError) {
+          return { decision: PolicyDecision.REQUIRE_APPROVAL, matchedRuleId: `RULE_ERROR:${rule.id}` };
+        }
         continue;
       }
     }
 
+    // ── Fail closed ─────────────────────────────────────────────────────────
+    // "No rule matched" used to mean ALLOW for everything, including writes and
+    // executions. Reads stay allowed by default (POL-007 covers them anyway);
+    // any state-changing or unrecognised operation now requires approval.
+    if (this.failClosed && isMutatingOperation(normalized.operation)) {
+      return { decision: PolicyDecision.REQUIRE_APPROVAL, matchedRuleId: FAIL_CLOSED_RULE_ID };
+    }
+
     return { decision: PolicyDecision.ALLOW, matchedRuleId: null };
+  }
+
+  /** Turn fail-closed enforcement on or off (on by default). */
+  setFailClosed(enabled: boolean): void {
+    this.failClosed = enabled;
+  }
+
+  isFailClosed(): boolean {
+    return this.failClosed;
   }
 
   /**
@@ -202,6 +311,6 @@ export class PolicyEngine {
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
-export function createPolicyEngine(): PolicyEngine {
-  return new PolicyEngine();
+export function createPolicyEngine(options?: { failClosed?: boolean; failClosedOnRuleError?: boolean }): PolicyEngine {
+  return new PolicyEngine(options);
 }

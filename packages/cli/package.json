@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "agi": "./dist/index.js"
+    "agi": "./dist/main.js"
   },
   "scripts": {
     "build": "tsc",
@@ -18,7 +18,8 @@
     "@agi-os/mission-runtime": "workspace:*"
   },
   "devDependencies": {
+    "@types/node": "^20.11.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.2.0"
+    "vitest": "^4.1.11"
   }
 }

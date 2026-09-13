@@ -12,7 +12,6 @@ import type {
   ValidatedLesson,
   MemoryWrite,
   CandidateLesson,
-  LessonValidation,
 } from './types.js';
 import { OutcomeAnalyzer } from './outcome-analyzer.js';
 import { DiscrepancyDetector } from './discrepancy-detector.js';

@@ -6,7 +6,7 @@ export class FileSystemWriteSkill implements SkillHandler {
   readonly skillId = 'filesystem.write';
   readonly category = 'filesystem';
 
-  async execute(input: Record<string, unknown>, context: SkillExecutionContext): Promise<{
+  async execute(input: Record<string, unknown>, _context: SkillExecutionContext): Promise<{
     bytesWritten: number;
     path: string;
   }> {

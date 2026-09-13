@@ -7,7 +7,6 @@ import type {
   CognitivePlan,
   RankedPlan,
   RankingBreakdown,
-  WorldConstraint,
 } from './types.js';
 
 // ---------------------------------------------------------------------------

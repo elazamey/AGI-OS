@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TaskQueue } from '../src/TaskQueue.js';
-import { TaskDefinition } from '../src/MissionRuntime.js';
+import type { TaskDefinition } from '../src/MissionRuntime.js';
 
 describe('TaskQueue', () => {
   let queue: TaskQueue;

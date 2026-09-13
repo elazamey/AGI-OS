@@ -11,7 +11,7 @@ describe('SkillExecutor', () => {
   const mockHandler: SkillHandler = {
     skillId: 'test.skill',
     category: 'test',
-    execute: async (input) => ({ done: true }),
+    execute: async (_input) => ({ done: true }),
   };
 
   const mockContract: SkillContract = {

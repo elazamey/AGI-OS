@@ -5,9 +5,9 @@
 
 import { now } from '@agi-os/kernel';
 import { GovernanceGateway } from '@agi-os/governance';
-import type { ActionIntent, PolicyDecision as PD } from '@agi-os/governance';
+import type { PolicyDecision as PD } from '@agi-os/governance';
 import { PolicyDecision } from '@agi-os/governance';
-import { OperationalDomain } from './types.js';
+import type { OperationalDomain } from './types.js';
 import type { DomainScenario, ScenarioResult, InterceptResult, EvaluationReport, DomainEvaluation, EvaluationConfig } from './types.js';
 import { crossDomainScenarios } from './scenarios.js';
 

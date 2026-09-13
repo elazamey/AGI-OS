@@ -111,7 +111,7 @@ export class RootCauseExtractor {
 
   private detectSystemicRootCause(
     analyses: FailureAnalysis[],
-    outcome: MissionOutcome
+    _outcome: MissionOutcome
   ): RootCause | null {
     if (analyses.length < 2) return null;
 

@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 import type { AuthCredentials } from './types.js';
 
 export interface OAuthConfig {
@@ -39,7 +39,7 @@ export class OAuthManager {
     return `${config.authUrl}?${params.toString()}`;
   }
 
-  async exchangeCode(providerId: string, code: string): Promise<OAuthToken | null> {
+  async exchangeCode(providerId: string, _code: string): Promise<OAuthToken | null> {
     const config = this.configs.get(providerId);
     if (!config) return null;
 

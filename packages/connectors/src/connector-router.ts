@@ -1,5 +1,5 @@
 import type { ConnectorBase } from './connector-base.js';
-import type { ConnectorContract, ConnectorResult } from './types.js';
+import type { ConnectorResult } from './types.js';
 
 export class ConnectorRouter {
   private connectors: Map<string, ConnectorBase> = new Map();

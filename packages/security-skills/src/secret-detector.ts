@@ -2,14 +2,14 @@ import { generateId, now } from '@agi-os/kernel';
 import type { SecurityScanResult, Threat } from './types.js';
 
 const SECRET_PATTERNS = [
-  { name: 'API Key', pattern: /(?:api[_-]?key|apikey)\s*[=:]\s*['"][A-Za-z0-9_\-]{15,}['"]/i },
+  { name: 'API Key', pattern: /(?:api[_-]?key|apikey)\s*[=:]\s*['"][A-Za-z0-9_-]{15,}['"]/i },
   { name: 'AWS Key', pattern: /(?:AKIA|ASIA)[A-Z0-9]{16}/ },
   { name: 'Private Key', pattern: /-----BEGIN (?:RSA )?PRIVATE KEY-----/ },
-  { name: 'Token', pattern: /(?:token|bearer|authorization)\s*[=:]\s*['"][A-Za-z0-9_\-\.]{15,}['"]/i },
+  { name: 'Token', pattern: /(?:token|bearer|authorization)\s*[=:]\s*['"][A-Za-z0-9_.-]{15,}['"]/i },
   { name: 'Password', pattern: /(?:password|passwd|pwd)\s*[=:]\s*['"][^'"]{6,}['"]/i },
   { name: 'GitHub Token', pattern: /ghp_[A-Za-z0-9]{30,}/ },
-  { name: 'Slack Token', pattern: /xox[baprs]-[A-Za-z0-9\-]+/ },
-  { name: 'Secret Value', pattern: /(?:secret|key)\s*[=:]\s*['"][A-Za-z0-9_\-]{20,}['"]/i },
+  { name: 'Slack Token', pattern: /xox[baprs]-[A-Za-z0-9-]+/ },
+  { name: 'Secret Value', pattern: /(?:secret|key)\s*[=:]\s*['"][A-Za-z0-9_-]{20,}['"]/i },
 ];
 
 export class SecretDetector {

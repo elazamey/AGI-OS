@@ -1,5 +1,5 @@
 import { now } from '@agi-os/kernel';
-import type { Checkpoint, RollbackResult } from './types.js';
+import type { RollbackResult } from './types.js';
 import { CheckpointManager } from './checkpoint-manager.js';
 
 export class RollbackManager {

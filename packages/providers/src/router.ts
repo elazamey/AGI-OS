@@ -9,7 +9,6 @@ import type {
   ProviderStatus,
   RouteDecision,
   RouteContext,
-  ProviderRequest,
 } from './types.js';
 import type { ReliabilityTracker, ConfidenceScorer, PatternDetector } from '@agi-os/self-model';
 

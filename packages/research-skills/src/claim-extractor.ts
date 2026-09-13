@@ -1,5 +1,5 @@
 import { generateId } from '@agi-os/kernel';
-import type { Claim, Evidence } from './types.js';
+import type { Claim } from './types.js';
 
 export class ClaimExtractor {
   extract(text: string, sourceId: string): Claim[] {

@@ -10,11 +10,11 @@ import type {
   ToolContext,
   ToolConfig,
 } from './types.js';
-import { ToolRegistry } from './tool-registry.js';
-import { CapabilityRegistry } from './capability.js';
-import { PolicyEngine } from './policy.js';
-import { AuthorizationManager } from './authorization.js';
-import { ApprovalGate } from './approval.js';
+import type { ToolRegistry } from './tool-registry.js';
+import type { CapabilityRegistry } from './capability.js';
+import type { PolicyEngine } from './policy.js';
+import type { AuthorizationManager } from './authorization.js';
+import type { ApprovalGate } from './approval.js';
 
 // ---------------------------------------------------------------------------
 // Tool Executor

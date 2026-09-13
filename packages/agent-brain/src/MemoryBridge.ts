@@ -1,4 +1,3 @@
-import { generateId } from '@agi-os/kernel';
 import type { BrainObservation } from './types.js';
 import type { WorkingMemory } from '@agi-os/memory';
 
@@ -15,7 +14,7 @@ export class MemoryBridge {
     });
   }
 
-  async getRelevantContext(missionId: string): Promise<Record<string, unknown>> {
+  async getRelevantContext(_missionId: string): Promise<Record<string, unknown>> {
     const goal = await this.deps.workingMemory.getCurrentGoal();
     const plan = await this.deps.workingMemory.getCurrentPlan();
     return { goal, plan };

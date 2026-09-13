@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProviderBroker } from '../src/provider-broker.js';
-import { CostGuard } from '../src/cost-guard.js';
 import { OllamaAdapter } from '../src/adapters/ollama.js';
 import { ReliabilityTracker, ConfidenceScorer, PatternDetector } from '@agi-os/self-model';
 

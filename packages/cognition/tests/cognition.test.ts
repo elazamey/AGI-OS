@@ -819,7 +819,7 @@ describe('Full Cognitive Pipeline Integration', () => {
   });
 
   it('should NEVER execute tools inside the cognitive loop', async () => {
-    let toolExecuted = false;
+    const toolExecuted = false;
     const loop = createFullLoop();
     await loop.process({ goal: 'This should not execute any tools', goalId: 'g1' });
     expect(toolExecuted).toBe(false);

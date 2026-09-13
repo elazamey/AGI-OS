@@ -6,8 +6,7 @@ import {
   createMissionRunner,
   validateMission
 } from '../src/mission.js';
-import { createTask } from '../src/task.js';
-import type { Task, TaskExecutor, TaskResult, Mission } from '../src/types.js';
+import type { Task, TaskExecutor, TaskResult } from '../src/types.js';
 
 // ---------------------------------------------------------------------------
 // Mock Task Executor
@@ -108,7 +107,7 @@ describe('MissionManager', () => {
   describe('getMissionsByState', () => {
     it('should get missions by state', () => {
       const mission1 = manager.createMission('Goal 1');
-      const mission2 = manager.createMission('Goal 2');
+      manager.createMission('Goal 2');
 
       manager.transitionMission(mission1.id, 'planning');
 

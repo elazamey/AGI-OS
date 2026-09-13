@@ -1,4 +1,4 @@
-import { ParallelismResult } from "./types.js";
+import type { ParallelismResult } from "./types.js";
 
 export class ParallelismSafetyTester {
   detectWriteConflicts(

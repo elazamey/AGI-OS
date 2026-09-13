@@ -81,7 +81,7 @@ describe('LocalVectorEngine', () => {
   // ---- Insert & Search ---------------------------------------------------
   describe('insert and search', () => {
     it('should insert and retrieve by ID', () => {
-      const doc = engine.insertWithId('doc-1', 'test content', { tag: 'test' });
+      engine.insertWithId('doc-1', 'test content', { tag: 'test' });
       expect(engine.get('doc-1')).toBeDefined();
       expect(engine.get('doc-1')?.text).toBe('test content');
     });

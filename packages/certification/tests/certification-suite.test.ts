@@ -1,5 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { createHash } from 'crypto';
+import { describe, it, expect } from 'vitest';
 
 // ============================================================================
 // AGI-OS CERTIFICATION SUITE — 220 Tests across G0-G12
@@ -47,7 +46,7 @@ describe('G1 — Reasoning & Planning', () => {
 describe('G2 — Tool & Skill Execution', () => {
   it('TLS-001: skill registry creates', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); expect(r).toBeDefined(); });
   it('TLS-002: skill registration', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); const instance = r.register({ id: 'test-skill', name: 'test-skill', version: '1.0.0', description: 'test', category: 'core', capabilities: [], risk: 'LOW', requiresApproval: false, requiresNetwork: false, requiresPersistence: false, allowedScopes: [], timeoutMs: 5000, retryLimit: 3, verification: { required: false, level: 'BASIC' } }); expect(instance).toBeDefined(); expect(instance.id).toBe('test-skill'); });
-  it('TLS-003: skill enable/disable', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); const instance = r.register({ id: 'toggle-skill', name: 'toggle-skill', version: '1.0.0', description: 'test', category: 'core', capabilities: [], risk: 'LOW', requiresApproval: false, requiresNetwork: false, requiresPersistence: false, allowedScopes: [], timeoutMs: 5000, retryLimit: 3, verification: { required: false, level: 'BASIC' } }); r.disable('toggle-skill'); expect(r.getSkill('toggle-skill')?.status).toBe('disabled'); r.enable('toggle-skill'); expect(r.getSkill('toggle-skill')?.status).toBe('enabled'); });
+  it('TLS-003: skill enable/disable', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); r.register({ id: 'toggle-skill', name: 'toggle-skill', version: '1.0.0', description: 'test', category: 'core', capabilities: [], risk: 'LOW', requiresApproval: false, requiresNetwork: false, requiresPersistence: false, allowedScopes: [], timeoutMs: 5000, retryLimit: 3, verification: { required: false, level: 'BASIC' } }); r.disable('toggle-skill'); expect(r.getSkill('toggle-skill')?.status).toBe('disabled'); r.enable('toggle-skill'); expect(r.getSkill('toggle-skill')?.status).toBe('enabled'); });
   it('TLS-004: skill unregister', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); r.register({ id: 'del-skill', name: 'del-skill', version: '1.0.0', description: 'test', category: 'core', capabilities: [], risk: 'LOW', requiresApproval: false, requiresNetwork: false, requiresPersistence: false, allowedScopes: [], timeoutMs: 5000, retryLimit: 3, verification: { required: false, level: 'BASIC' } }); expect(r.unregister('del-skill')).toBe(true); expect(r.getSkill('del-skill')).toBeUndefined(); });
   it('TLS-005: canExecute check', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); r.register({ id: 'exec-skill', name: 'exec-skill', version: '1.0.0', description: 'test', category: 'core', capabilities: [], risk: 'LOW', requiresApproval: false, requiresNetwork: false, requiresPersistence: false, allowedScopes: [], timeoutMs: 5000, retryLimit: 3, verification: { required: false, level: 'BASIC' } }); const result = r.canExecute('exec-skill'); expect(result.allowed).toBe(true); });
   it('TLS-006: execution recording', async () => { const { SkillRegistry } = await import('@agi-os/skills'); const r = new SkillRegistry(); r.register({ id: 'rec-skill', name: 'rec-skill', version: '1.0.0', description: 'test', category: 'core', capabilities: [], risk: 'LOW', requiresApproval: false, requiresNetwork: false, requiresPersistence: false, allowedScopes: [], timeoutMs: 5000, retryLimit: 3, verification: { required: false, level: 'BASIC' } }); r.recordExecution({ skillId: 'rec-skill', success: true, output: null, duration: 10, timestamp: new Date().toISOString() }); const stats = r.getStats(); expect(stats.totalExecutions).toBe(1); });
@@ -102,7 +101,13 @@ describe('G4 — OS / Sandbox', () => {
   it('OS-011: POL-006 blocks outside workspace', async () => { const { GovernanceGateway, PolicyDecision } = await import('@agi-os/governance'); const g = new GovernanceGateway(); const r = g.intercept({ id: 'test', module: 'fs', operation: 'write', target: '/usr/bin/backdoor' }); expect(r.decision).toBe(PolicyDecision.BLOCK); });
   it('OS-012: terminal executor types', async () => { const { TerminalExecutor } = await import('@agi-os/os-skills'); const t = new TerminalExecutor(); expect(typeof t).toBe('object'); });
   it('OS-013: diff engine types', async () => { const { DiffEngine } = await import('@agi-os/os-skills'); const d = new DiffEngine(); expect(typeof d).toBe('object'); });
-  it('OS-014: adversarial suite blocks escapes', async () => { const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial'); const s = new AdversarialSuite(); const r = s.runAll(); expect(r.escaped).toBe(0); });
+  it('OS-014: adversarial suite blocks escapes', async () => {
+    const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial');
+    const s = new AdversarialSuite({ isolation: 'vm', timeoutMs: 600 });
+    const r = await s.runAll();
+    expect(r.escaped).toBe(0);
+    expect(r.failed).toBe(0);
+  });
 });
 
 // G5: Coding Agent (22 tests)
@@ -219,8 +224,37 @@ describe('G9 — Security & Governance', () => {
   it('SEC-021: audit records exist', async () => { const { GovernanceGateway } = await import('@agi-os/governance'); const g = new GovernanceGateway(); for (let i = 0; i < 5; i++) g.intercept({ id: `t${i}`, module: 'fs', operation: 'read', target: './test' }); expect(g.getAuditHistory().length).toBe(5); });
   it('SEC-022: risk escalation works', async () => { const { GovernanceGateway, PolicyDecision } = await import('@agi-os/governance'); const g = new GovernanceGateway(); const r = g.intercept({ id: 't', module: 'exec', operation: 'execute', target: 'ls' }); expect(r.decision).toBe(PolicyDecision.REQUIRE_APPROVAL); });
   it('SEC-023: safe read allowed', async () => { const { GovernanceGateway, PolicyDecision } = await import('@agi-os/governance'); const g = new GovernanceGateway(); expect(g.intercept({ id: 't', module: 'fs', operation: 'read', target: './README.md' }).decision).toBe(PolicyDecision.ALLOW); });
-  it('SEC-024: adversarial suite runs', async () => { const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial'); const s = new AdversarialSuite(); const r = s.runAll(); expect(r.total).toBeGreaterThan(0); });
-  it('SEC-025: zero escapes in adversarial', async () => { const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial'); const s = new AdversarialSuite(); const r = s.runAll(); expect(r.escaped).toBe(0); });
+  it('SEC-024: adversarial suite runs', async () => {
+    const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial');
+    const s = new AdversarialSuite({ isolation: 'vm', timeoutMs: 600 });
+    const r = await s.runAll();
+    expect(r.total).toBeGreaterThan(0);
+    expect(r.results.every((x) => x.observation)).toBe(true);
+  });
+  it('SEC-025: zero escapes in adversarial', async () => {
+    const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial');
+    const s = new AdversarialSuite({ isolation: 'vm', timeoutMs: 600 });
+    const r = await s.runAll();
+    expect(r.escaped).toBe(0);
+  });
+
+  it('SEC-025b: the escape detector is not blind', async () => {
+    // Prove the oracle can report a breach, otherwise SEC-025 asserts nothing.
+    const { AdversarialSuite } = await import('@agi-os/sandbox-adversarial');
+    const s = new AdversarialSuite({ isolation: 'vm', timeoutMs: 600 });
+    const canary = await s.runAttempt({
+      id: 'cert-canary',
+      name: 'detector self-test',
+      category: 'injection',
+      description: 'succeeds on purpose',
+      goal: 'print CERT_CANARY_PWNED',
+      payload: 'console.log("CERT_CANARY_PWNED");',
+      achieved: (obs) => obs.stdout.includes('CERT_CANARY_PWNED'),
+      expected: ['blocked'],
+    });
+    expect(canary.actual).toBe('escaped');
+    expect(canary.passed).toBe(false);
+  });
   it('SEC-026: governance gate passes', async () => { const { ProductionGate } = await import('@agi-os/production-gates'); const pg = new ProductionGate(); const r = pg.runGovernanceGate(); expect(r.status).toBe('PASS'); });
   it('SEC-027: policy gate passes', async () => { const { ProductionGate } = await import('@agi-os/production-gates'); const pg = new ProductionGate(); const r = pg.runPolicyGate(); expect(r.status).toBe('PASS'); });
 });

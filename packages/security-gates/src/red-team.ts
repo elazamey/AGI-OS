@@ -1,5 +1,6 @@
-import { generateId, now } from '@agi-os/kernel';
-import { GovernanceGateway, PolicyDecision } from '@agi-os/governance';
+import { now } from '@agi-os/kernel';
+import type { GovernanceGateway} from '@agi-os/governance';
+import { PolicyDecision } from '@agi-os/governance';
 import type { GateResult } from './types.js';
 
 export interface AttackVector {

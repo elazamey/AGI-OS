@@ -1,5 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
-import type { ExtractedContent, BrowserResult, BrowserAction } from './types.js';
+import type { ExtractedContent } from './types.js';
 
 export class PageInspector {
   inspect(pageContent: string): ExtractedContent {

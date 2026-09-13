@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
+import type {
   ToolRegistry,
   CapabilityRegistry,
   PolicyEngine,
   AuthorizationManager,
   ApprovalGate,
-  ToolExecutor,
+  ToolExecutor} from '../src/index.js';
+import {
   createToolRegistry,
   createCapabilityRegistry,
   createPolicyEngine,
@@ -21,7 +22,7 @@ import {
   WRITE_REQUIRES_APPROVAL_POLICY,
   DANGEROUS_PATHS_DENY_POLICY
 } from '../src/index.js';
-import type { ToolHandler, ToolExecutionRequest } from '../src/types.js';
+import type { ToolHandler } from '../src/types.js';
 
 // ---------------------------------------------------------------------------
 // Mock Tool Handler
@@ -40,7 +41,6 @@ class MockFileReadHandler implements ToolHandler {
 
 class MockFileWriteHandler implements ToolHandler {
   async execute(input: Record<string, unknown>) {
-    const path = input.path as string;
     const content = input.content as string;
     return {
       success: true,

@@ -6,7 +6,6 @@ import {
   serializeTask,
   deserializeTask
 } from '../src/task.js';
-import type { Task } from '../src/types.js';
 
 describe('Task', () => {
   describe('createTask', () => {

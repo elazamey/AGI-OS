@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MissionRuntime, TaskDefinition, AgentInstance } from '../src/MissionRuntime.js';
+import type { TaskDefinition, AgentInstance } from '../src/MissionRuntime.js';
+import { MissionRuntime } from '../src/MissionRuntime.js';
 
 describe('MissionRuntime', () => {
   let runtime: MissionRuntime;

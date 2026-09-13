@@ -1,5 +1,4 @@
 import { generateId, now } from '@agi-os/kernel';
-import { PolicyDecision } from '@agi-os/governance';
 import type { BenchmarkSuite, BenchmarkScenario, BenchmarkResult, BenchmarkActual, BenchmarkCategory } from './types.js';
 
 export class BenchmarkOrchestrator {

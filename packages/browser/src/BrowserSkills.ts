@@ -1,4 +1,4 @@
-import { BrowserSession } from './BrowserSession.js';
+import type { BrowserSession } from './BrowserSession.js';
 import { BrowserActions } from './BrowserActions.js';
 
 export interface SkillResult {
