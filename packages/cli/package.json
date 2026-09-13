@@ -1,0 +1,24 @@
+{
+  "name": "@agi-os/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "agi": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agi-os/kernel": "workspace:*",
+    "@agi-os/llm-gateway": "workspace:*",
+    "@agi-os/mission-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}
