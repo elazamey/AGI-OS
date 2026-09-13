@@ -17,8 +17,8 @@
     "dashboard": "pnpm --filter @agi-os/dashboard dev",
     "dashboard:build": "pnpm --filter @agi-os/dashboard build",
     "mission:golden": "pnpm --filter @agi-os/certification test -- tests/missions/MISSION-001.test.ts",
-    "verify": "pnpm hygiene && pnpm typecheck && pnpm build && pnpm test && pnpm lint && pnpm audit && pnpm adversarial",
-    "verify:quick": "pnpm hygiene && pnpm typecheck && pnpm build && pnpm audit",
+    "verify": "pnpm hygiene && pnpm build && pnpm typecheck && pnpm test && pnpm lint && pnpm audit && pnpm adversarial",
+    "verify:quick": "pnpm hygiene && pnpm build && pnpm typecheck && pnpm audit",
     "hygiene": "node scripts/workspace-hygiene.mjs",
     "adversarial": "node scripts/adversarial-gate.mjs"
   },

@@ -45,12 +45,19 @@ jobs:
           key: nm-${{ github.run_id }}-${{ github.sha }}
 
   # ===========================================================================
-  # 2. Typecheck — must pass before build (catches the @types/node class of bug)
+  # 2. Typecheck — a second pass with `tsc --noEmit`. Not redundant: packages
+  #    built with tsup are not fully typechecked by their build step, and this is
+  #    what catches the missing-@types/node class of bug.
+  #
+  #    It MUST run after build. Workspace packages resolve each other through
+  #    their built declaration files (package.json `types: ./dist/index.d.ts`),
+  #    so typechecking first fails on a clean runner with TS2307 for every
+  #    '@agi-os/*' import — 166 such errors were observed before this reorder.
   # ===========================================================================
   typecheck:
     name: Typecheck all packages
     runs-on: ubuntu-latest
-    needs: install
+    needs: build
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -62,19 +69,22 @@ jobs:
           cache: pnpm
       - uses: actions/cache/restore@v4
         with:
+          # Restores dist/ as well: cross-package imports resolve to built .d.ts.
           path: |
             node_modules
             packages/*/node_modules
-          key: nm-${{ github.run_id }}-${{ github.sha }}
+            packages/*/dist
+          key: build-${{ github.run_id }}-${{ github.sha }}
       - run: pnpm -r --no-bail typecheck
 
   # ===========================================================================
-  # 3. Build — every package must compile (Dockerfile depends on this)
+  # 3. Build — every package must compile. Runs first among the compile jobs:
+  #    typecheck, test, lint, security-poc and the Dockerfile all need dist/.
   # ===========================================================================
   build:
     name: Build all packages
     runs-on: ubuntu-latest
-    needs: typecheck
+    needs: install
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
