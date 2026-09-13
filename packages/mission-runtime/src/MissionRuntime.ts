@@ -193,9 +193,14 @@ export class MissionRuntime {
 
     const state = this.missions.get(missionId);
     if (state) {
-      state.status = checkpoint.state.status;
-      state.tasks = checkpoint.state.tasks;
-      state.results = new Map(Object.entries(checkpoint.state.results));
+      const stateData = checkpoint.state as {
+        status: MissionState['status'];
+        tasks: TaskDefinition[];
+        results: Record<string, TaskResult>;
+      };
+      state.status = stateData.status;
+      state.tasks = stateData.tasks;
+      state.results = new Map(Object.entries(stateData.results));
     }
   }
 }
