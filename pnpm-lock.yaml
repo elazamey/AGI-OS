@@ -577,6 +577,31 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/golden-missions:
+    dependencies:
+      '@agi-os/browser':
+        specifier: workspace:*
+        version: link:../browser
+      '@agi-os/io-github':
+        specifier: workspace:*
+        version: link:../io-github
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/llm-gateway':
+        specifier: workspace:*
+        version: link:../llm-gateway
+      '@agi-os/mission-runtime':
+        specifier: workspace:*
+        version: link:../mission-runtime
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/governance:
     dependencies:
       '@agi-os/kernel':
