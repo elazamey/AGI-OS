@@ -1,0 +1,48 @@
+name: Setup AGI OS workspace
+description: >
+  Install pnpm and Node, then install workspace dependencies from the frozen
+  lockfile and optionally build every package. Each CI job uses this instead of
+  restoring another job's output, because actions/cache is best-effort and must
+  not be the only thing standing between a job and its inputs.
+
+inputs:
+  pnpm-version:
+    description: pnpm version to install
+    required: false
+    default: '8.15.0'
+  node-version:
+    description: Node version to install
+    required: false
+    default: '20'
+  build:
+    description: >
+      Run `pnpm -r build` after installing. Required by any job that typechecks,
+      tests, lints or runs the adversarial suite: workspace packages resolve each
+      other through their BUILT declaration files (package.json
+      `types: ./dist/index.d.ts`), so without dist/ every cross-package import
+      fails with TS2307.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v4
+      with:
+        version: ${{ inputs.pnpm-version }}
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        # Caches the pnpm content-addressable store — the supported mechanism,
+        # and unlike a node_modules cache it cannot arrive half-restored.
+        cache: pnpm
+
+    - name: Install dependencies (frozen lockfile)
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Build all packages
+      if: inputs.build == 'true'
+      shell: bash
+      run: pnpm -r build
