@@ -116,6 +116,7 @@ export class RiskEvaluator {
       '.env', '.env.local', '.env.production',
       'id_rsa', 'id_ed25519', '.ssh/',
       '/boot/', '/sys/', '/proc/',
+      '..',
     ];
 
     for (const pattern of sensitivePatterns) {

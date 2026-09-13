@@ -8,6 +8,25 @@ importers:
 
   .: {}
 
+  packages/artifact-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/benchmark:
     dependencies:
       '@agi-os/governance':
@@ -22,6 +41,44 @@ importers:
       '@agi-os/providers':
         specifier: workspace:*
         version: link:../providers
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/browser-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/coding-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -51,6 +108,44 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/connectors:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/core-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
@@ -150,6 +245,25 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/git-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/governance:
     dependencies:
       '@agi-os/kernel':
@@ -196,6 +310,25 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/memory-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
@@ -265,6 +398,25 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/os-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/providers:
     dependencies:
       '@agi-os/kernel':
@@ -286,6 +438,25 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/recovery-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
@@ -321,6 +492,25 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/research-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/sandbox:
     dependencies:
       '@agi-os/governance':
@@ -329,6 +519,56 @@ importers:
       '@agi-os/kernel':
         specifier: workspace:*
         version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/security-gates:
+    dependencies:
+      '@agi-os/benchmark':
+        specifier: workspace:*
+        version: link:../benchmark
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/providers':
+        specifier: workspace:*
+        version: link:../providers
+      '@agi-os/sandbox':
+        specifier: workspace:*
+        version: link:../sandbox
+      '@agi-os/swarm':
+        specifier: workspace:*
+        version: link:../swarm
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/security-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -349,6 +589,25 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/skills:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
@@ -393,6 +652,25 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/verification-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)

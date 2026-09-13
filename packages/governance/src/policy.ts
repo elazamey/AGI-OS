@@ -77,7 +77,7 @@ export class PolicyEngine {
       description: 'Block execution of shell-dangerous commands',
       condition: (i) => {
         if (i.module !== 'exec' && i.module !== 'process') return false;
-        const dangerous = ['rm -rf', 'mkfs', 'dd', 'format', ':(){', 'fork bomb', 'chmod 777', 'chown root'];
+        const dangerous = ['rm -rf', 'mkfs', 'dd', 'format', ':(){', 'fork bomb', 'chmod 777', 'chown root', 'crontab', 'docker run --privileged', 'eval(', 'new Function'];
         const target = i.target.toLowerCase();
         return dangerous.some((d) => target.includes(d));
       },

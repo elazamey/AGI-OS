@@ -2,14 +2,14 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AGI OS Control Center',
-  description: 'Local-first autonomous agentic framework dashboard',
+  title: 'Nawah OS',
+  description: 'Agent Operating System',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="ar" dir="ltr">
+      <body className="h-screen w-screen overflow-hidden">{children}</body>
     </html>
   );
 }
