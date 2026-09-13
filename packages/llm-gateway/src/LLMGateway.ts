@@ -110,11 +110,11 @@ export class LLMGateway {
     };
   }
 
-  private async callGemini(config: LLMRequestConfig, requestId: string): Promise<LLMResponse> {
+  private async callGemini(_config: LLMRequestConfig, _requestId: string): Promise<LLMResponse> {
     throw new Error('Gemini provider requires API key configuration. Set GEMINI_API_KEY environment variable.');
   }
 
-  private async callGroq(config: LLMRequestConfig, requestId: string): Promise<LLMResponse> {
+  private async callGroq(_config: LLMRequestConfig, _requestId: string): Promise<LLMResponse> {
     throw new Error('Groq provider requires API key configuration. Set GROQ_API_KEY environment variable.');
   }
 

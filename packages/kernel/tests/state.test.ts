@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   createInitialState,
-  createStateRevision,
   applyStateChange,
   StateManager,
   validateState,
@@ -9,7 +8,6 @@ import {
   deserializeState,
   diffStates
 } from '../src/state.js';
-import type { State } from '../src/types.js';
 
 describe('State', () => {
   describe('createInitialState', () => {
@@ -125,7 +123,7 @@ describe('State', () => {
 
     it('should get history between revisions', () => {
       const rev1 = manager.applyChanges({ count: 1 }, 'event-1');
-      const rev2 = manager.applyChanges({ count: 2 }, 'event-2');
+      manager.applyChanges({ count: 2 }, 'event-2');
       const rev3 = manager.applyChanges({ count: 3 }, 'event-3');
 
       const history = manager.getHistoryBetween(rev1.to, rev3.to);

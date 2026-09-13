@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { BenchmarkOrchestrator } from '../src/benchmark-orchestrator.js';
 import { createSafetySuite, createToolUseSuite, createReasoningSuite } from '../src/builtin-suites.js';
-import { PolicyDecision } from '@agi-os/governance';
 
 describe('Benchmark — Integration', () => {
   let b: BenchmarkOrchestrator;

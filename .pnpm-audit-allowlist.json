@@ -1,0 +1,11 @@
+{
+  "$schema": "./scripts/audit-allowlist.schema.json",
+  "_comment": [
+    "Time-boxed exceptions for the dependency audit gate (scripts/audit-gate.mjs).",
+    "Every entry MUST have: package, reason, owner, expires (ISO date, max 30 days out).",
+    "An expired entry fails CI on purpose — exceptions cannot become permanent.",
+    "This file is currently EMPTY: `pnpm audit` reports 0 critical/high/moderate/low.",
+    "Do not add entries to silence a finding you have not triaged."
+  ],
+  "exceptions": []
+}

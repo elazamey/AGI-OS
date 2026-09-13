@@ -5,8 +5,6 @@ import {
   createMemoryConsolidation,
   createSemanticMemory,
   createEpisodicMemory,
-  createWorkingMemory,
-  createMetaMemory,
 } from '../src/index.js';
 
 // ===========================================================================

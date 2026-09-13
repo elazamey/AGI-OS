@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { CrashScenario, CrashRecoveryResult } from './types.js';
 
 export class CrashRecoveryTester {

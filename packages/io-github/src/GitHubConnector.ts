@@ -1,5 +1,4 @@
-import { generateId, hash } from '@agi-os/kernel';
-import { HttpClient, HttpRequestOptions, HttpResponse } from '@agi-os/io-http';
+import { HttpClient } from '@agi-os/io-http';
 
 export interface GitHubConfig {
   token?: string;

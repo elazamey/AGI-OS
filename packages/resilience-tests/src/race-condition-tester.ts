@@ -1,4 +1,3 @@
-import { now } from '@agi-os/kernel';
 import type { RaceCondition, RaceTestResult } from './types.js';
 
 export class RaceConditionTester {

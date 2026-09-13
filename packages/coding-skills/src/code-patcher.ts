@@ -1,4 +1,3 @@
-import { generateId, now } from '@agi-os/kernel';
 import type { PatchResult } from './types.js';
 
 export class CodePatcher {

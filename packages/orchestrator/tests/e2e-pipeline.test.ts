@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { generateId, now } from '@agi-os/kernel';
 import { MissionManager } from '@agi-os/missions';
 import { InMemoryMemoryStore, WorkingMemory, SemanticMemory } from '@agi-os/memory';
-import { CognitivePlanner } from '@agi-os/cognition';
 import { ReflectionEngine } from '@agi-os/reflection';
 import { SelfModel } from '@agi-os/self-model';
 import { GovernanceGateway, PolicyDecision } from '@agi-os/governance';
@@ -17,7 +16,6 @@ describe('AGI OS — End-to-End Pipeline Integration (Phases 0-10)', () => {
   let memoryStore: InMemoryMemoryStore;
   let workingMemory: WorkingMemory;
   let semanticMemory: SemanticMemory;
-  let cognitivePlanner: CognitivePlanner;
   let reflection: ReflectionEngine;
   let selfModel: SelfModel;
   let governance: GovernanceGateway;
@@ -27,7 +25,6 @@ describe('AGI OS — End-to-End Pipeline Integration (Phases 0-10)', () => {
     memoryStore = new InMemoryMemoryStore();
     workingMemory = new WorkingMemory(memoryStore);
     semanticMemory = new SemanticMemory(memoryStore);
-    cognitivePlanner = new CognitivePlanner();
     reflection = new ReflectionEngine();
     selfModel = new SelfModel();
     governance = new GovernanceGateway();
@@ -134,11 +131,16 @@ describe('AGI OS — End-to-End Pipeline Integration (Phases 0-10)', () => {
       description: 'Write new values to config.json',
     });
 
+    // A workspace-relative file write is now explicitly allowed (POL-009), so
+    // it can no longer demonstrate the escalation path. Writing production
+    // configuration is the action that genuinely requires a human: no policy
+    // permits it, and the fail-closed default queues an approval instead of
+    // silently allowing the write.
     const intent = {
       id: generateId(),
-      module: 'fs',
+      module: 'config',
       operation: 'write',
-      target: './config.json',
+      target: 'production/config.json',
     };
 
     const gateResult = governance.intercept(intent);

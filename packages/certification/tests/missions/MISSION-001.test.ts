@@ -143,8 +143,9 @@ describe('MISSION-001: Read File → Evidence → Complete', () => {
     expect(data.lastModified).toBeDefined();
 
     // Verify evidence
-    expect(task.result?.evidence).toBeDefined();
-    const evidence = task.result?.evidence!;
+    const evidence = task.result?.evidence;
+    expect(evidence).toBeDefined();
+    if (!evidence) throw new Error('expected evidence on task.result');
     expect(evidence.operation).toContain('filesystem.read');
     expect(evidence.exitCode).toBe(0);
     expect(evidence.stdoutHash).toBeDefined();

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { SwarmKernel, DefaultTaskDecomposer } from '../src/swarm-kernel.js';
+import { SwarmKernel } from '../src/swarm-kernel.js';
 import { GovernanceGateway } from '@agi-os/governance';
 
 describe('SwarmKernel', () => {

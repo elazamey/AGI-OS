@@ -1,9 +1,9 @@
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import { GovernanceGateway } from '@agi-os/governance';
 import { SBOMGenerator } from './sbom-generator.js';
 import { DependencyAuditor } from './dependency-auditor.js';
 import { RegressionTracker } from './regression-tracker.js';
-import type { ProductionGateReport, GateResult, GateStatus, SBOMEntry, DependencyAuditResult, RegressionCheck } from './types.js';
+import type { ProductionGateReport, GateResult, GateStatus } from './types.js';
 
 export class ProductionGate {
   private governance: GovernanceGateway;

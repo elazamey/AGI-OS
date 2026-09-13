@@ -9,16 +9,12 @@ import type {
   CognitiveContext,
   CognitiveDecision,
   CognitivePlan,
-  HypothesisSet,
-  RankedPlan,
   RejectedPlan,
-  WorldConstraint,
-  CognitiveProvider,
 } from './types.js';
 import type { WorldStateManager } from './world-state.js';
-import { ContextBuilder } from './context-builder.js';
-import { HypothesisEngine } from './hypothesis.js';
-import { CognitivePlanner } from './planner.js';
+import type { ContextBuilder } from './context-builder.js';
+import type { HypothesisEngine } from './hypothesis.js';
+import type { CognitivePlanner } from './planner.js';
 import { PlanValidator } from './plan-validator.js';
 import { PlanRanker } from './plan-ranker.js';
 
@@ -70,7 +66,7 @@ export class CognitiveLoop {
     planCount?: number;
   }): Promise<CognitiveDecision> {
     // ── 1. OBSERVE ──────────────────────────────────────────────────────
-    const worldState = this.worldStateManager.getState();
+    this.worldStateManager.getState();
 
     // ── 2. RETRIEVE ─────────────────────────────────────────────────────
     const context = await this.contextBuilder.build({

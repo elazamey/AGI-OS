@@ -2,15 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GitHubConnector } from '../src/GitHubConnector.js';
 
 describe('GitHubConnector', () => {
-  let connector: GitHubConnector;
-
-  beforeEach(() => {
-    connector = new GitHubConnector({
-      owner: 'test-owner',
-      repo: 'test-repo',
-    });
-  });
-
   it('should create with default config', () => {
     const defaultConnector = new GitHubConnector();
     expect(defaultConnector).toBeDefined();

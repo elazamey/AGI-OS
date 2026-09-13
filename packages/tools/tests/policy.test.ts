@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import type {
+  PolicyEngine} from '../src/policy.js';
 import {
-  PolicyEngine,
   createPolicyEngine,
   READ_ONLY_POLICY,
   WRITE_REQUIRES_APPROVAL_POLICY,

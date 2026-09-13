@@ -10,7 +10,7 @@ import type {
   TaskSummary,
   KeyEvent,
 } from './types.js';
-import type { MemoryStore, MemoryFilter } from './types.js';
+import type { MemoryStore } from './types.js';
 
 // ---------------------------------------------------------------------------
 // Episodic Memory — records of what happened

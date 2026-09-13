@@ -11,4 +11,5 @@ out/
 *.log
 coverage/
 
-
+# test scratch dirs created by certification/mission tests
+.agi-os-test/

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConnectorRouter } from '../src/connector-router.js';
 import { GitHubConnector } from '../src/github-connector.js';
-import { RESTConnector } from '../src/rest-connector.js';
 
 describe('ConnectorRouter', () => {
   let router: ConnectorRouter;

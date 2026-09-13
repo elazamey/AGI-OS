@@ -1,4 +1,4 @@
-import { ConflictResult } from "./types.js";
+import type { ConflictResult } from "./types.js";
 
 export class ConflictDetector {
   detectConflicts(

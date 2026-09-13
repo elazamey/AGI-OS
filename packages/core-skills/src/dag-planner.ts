@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 import type { TaskPlan, PlanStep, DecomposedTask } from './types.js';
 
 export class DAGPlanner {

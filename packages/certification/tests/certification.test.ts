@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { EvidenceCollector } from '../src/evidence.js';
 import { Scorecard } from '../src/scorecard.js';
 import { CertificationRunner } from '../src/certification-runner.js';
-import type { TestEvidence, GateResult } from '../src/types.js';
 
 describe('EvidenceCollector', () => {
   let collector: EvidenceCollector;

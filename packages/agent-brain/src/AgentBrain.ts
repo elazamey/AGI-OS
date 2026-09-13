@@ -1,4 +1,4 @@
-import type { SkillInstance, SkillRegistry } from '@agi-os/skills';
+import type { SkillRegistry } from '@agi-os/skills';
 import type { ProviderBroker } from '@agi-os/providers';
 import type { BrainContext, BrainDecision, BrainObservation } from './types.js';
 import { PromptEngine } from './PromptEngine.js';

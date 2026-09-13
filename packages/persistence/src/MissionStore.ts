@@ -1,4 +1,4 @@
-import { FileBackend } from './FileBackend.js';
+import type { FileBackend } from './FileBackend.js';
 
 export class MissionStore {
   constructor(

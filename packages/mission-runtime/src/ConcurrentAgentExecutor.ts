@@ -1,6 +1,6 @@
 import { generateId } from '@agi-os/kernel';
-import { TaskQueue } from './TaskQueue.js';
-import { MissionState, TaskResult, AgentInstance, TaskDefinition } from './MissionRuntime.js';
+import type { TaskQueue } from './TaskQueue.js';
+import type { MissionState, TaskResult, AgentInstance, TaskDefinition } from './MissionRuntime.js';
 
 export interface ExecutorConfig {
   maxConcurrentAgents?: number;

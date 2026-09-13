@@ -78,7 +78,7 @@ export class TaskDecomposer {
 
   private findParallelGroups(steps: PlanStep[]): string[][] {
     const groups: string[][] = [];
-    const depMap = new Map(steps.map(s => [s.id, s.dependencies]));
+    new Map(steps.map(s => [s.id, s.dependencies]));
     const ready = steps.filter(s => s.dependencies.length === 0);
     if (ready.length > 1) groups.push(ready.map(s => s.id));
     return groups;

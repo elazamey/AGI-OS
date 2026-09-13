@@ -1,4 +1,4 @@
-import { SkillRunner } from './SkillRunner.js';
+import type { SkillRunner } from './SkillRunner.js';
 import type { SkillExecutionRequest, SkillExecutionResult, SkillExecutionContext } from './types.js';
 
 export class SkillExecutor {

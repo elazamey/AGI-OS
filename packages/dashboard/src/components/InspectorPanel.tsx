@@ -2,7 +2,7 @@ interface InspectorPanelProps {
   taskId: string | null;
 }
 
-export function InspectorPanel({ taskId }: InspectorPanelProps) {
+export function InspectorPanel(_props: InspectorPanelProps) {
   return (
     <aside className="w-72 bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col shrink-0">
       <div className="p-3 border-b border-[var(--border)]">

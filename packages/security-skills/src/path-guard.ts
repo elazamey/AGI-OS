@@ -1,3 +1,4 @@
+import { resolve as resolvePath } from 'node:path';
 import { generateId, now } from '@agi-os/kernel';
 import type { SecurityScanResult, Threat } from './types.js';
 
@@ -45,9 +46,28 @@ export class PathGuard {
     return { safe: threats.length === 0, threats };
   }
 
+  /**
+   * True when `filePath` lies inside one of `allowedScopes`.
+   *
+   * Two fail-open bugs are fixed here:
+   *   * an empty scope list used to mean "everything is allowed"; it now means
+   *     "nothing was granted" (fail closed);
+   *   * `startsWith` compared raw text, so `/sandbox-evil` counted as inside
+   *     `/sandbox`. Comparison is now on resolved paths with a separator
+   *     boundary.
+   */
   isWithinScope(filePath: string, allowedScopes: string[]): boolean {
-    if (allowedScopes.length === 0) return true;
-    return allowedScopes.some(scope => filePath.startsWith(scope));
+    if (!allowedScopes || allowedScopes.length === 0) return false;
+    if (/(^|[\\/])\.\.([\\/]|$)/.test(filePath)) return false;
+
+    const resolved = resolvePath(filePath);
+    return allowedScopes.some(scope => {
+      const root = resolvePath(scope);
+      if (resolved === root) return true;
+      const sep = root.includes('\\') ? '\\' : '/';
+      const prefix = root.endsWith(sep) ? root : root + sep;
+      return resolved.startsWith(prefix);
+    });
   }
 
   scan(target: string): SecurityScanResult {

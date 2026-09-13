@@ -267,7 +267,7 @@ describe('Meta Memory', () => {
   });
 
   it('should record reliability', async () => {
-    const record = await memory.recordReliability({
+    await memory.recordReliability({
       toolId: 'filesystem.read',
       successRate: 0.98,
       sampleSize: 200,

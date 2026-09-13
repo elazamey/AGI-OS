@@ -14,7 +14,7 @@ const STATUS_CONFIG = {
   paused: { color: 'var(--warning)', label: 'متوقفة', dot: 'status-warning' },
 };
 
-export function MissionCard({ id, title, status, progress, agents, skills }: MissionCardProps) {
+export function MissionCard({ id: _id, title, status, progress, agents, skills }: MissionCardProps) {
   const config = STATUS_CONFIG[status];
 
   return (

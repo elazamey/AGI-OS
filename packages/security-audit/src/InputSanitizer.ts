@@ -37,7 +37,7 @@ export class InputSanitizer {
     let sanitized = path;
     const removedPatterns: string[] = [];
 
-    const pathTraversal = /\.\.[\/\\]/g;
+    const pathTraversal = /\.\.[/\\]/g;
     if (pathTraversal.test(sanitized)) {
       removedPatterns.push('Path traversal');
       sanitized = sanitized.replace(pathTraversal, '');

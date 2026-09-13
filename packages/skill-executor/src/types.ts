@@ -16,6 +16,8 @@ export interface SkillExecutionResult {
     code: string;
     message: string;
     retryable: boolean;
+    /** Policy rule / approval reference when the refusal came from governance. */
+    metadata?: { ruleId?: string | null; approvalRequestId?: string };
   };
   evidence: Evidence;
   duration: number;

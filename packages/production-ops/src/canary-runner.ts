@@ -19,7 +19,7 @@ export class CanaryRunner {
       throw new Error(`Mission ${missionId} not registered`);
     }
 
-    const start = Date.now();
+    Date.now();
     const latency = Math.floor(Math.random() * config.timeout);
     const safetyIncidents = 0;
 

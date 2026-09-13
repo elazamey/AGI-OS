@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import { PlanPanel } from '@/components/PlanPanel';
 import { AgentActivity } from '@/components/AgentActivity';
 import { InspectorPanel } from '@/components/InspectorPanel';
 import { ChatInput } from '@/components/ChatInput';
-import { SystemBar } from '@/components/SystemBar';
 
 const MOCK_PLAN = [
   { id: 't1', name: 'تحليل الهدف', status: 'completed' as const, skill: 'Intent', risk: 'LOW', duration: '2s' },
@@ -15,7 +14,9 @@ const MOCK_PLAN = [
   { id: 't5', name: 'التحقق النهائي', status: 'pending' as const, skill: 'Verification', risk: 'LOW', duration: '~1m' },
 ];
 
-export default function MissionWorkspace({ params }: { params: { id: string } }) {
+export default function MissionWorkspace({ params }: { params: Promise<{ id: string }> }) {
+  // Next.js 15+: dynamic route params are asynchronous.
+  const { id: missionId } = use(params);
   const [selectedTask, setSelectedTask] = useState<string | null>('t3');
 
   return (
@@ -29,7 +30,7 @@ export default function MissionWorkspace({ params }: { params: { id: string } })
         <div className="h-12 border-b border-[var(--border)] flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-3">
             <button className="text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs">← رجوع</button>
-            <span className="text-sm font-medium">مهمة #{params.id}</span>
+            <span className="text-sm font-medium">مهمة #{missionId}</span>
             <span className="flex items-center gap-1.5 text-xs">
               <span className="status-dot status-running" />
               <span style={{ color: 'var(--accent)' }}>قيد التنفيذ</span>

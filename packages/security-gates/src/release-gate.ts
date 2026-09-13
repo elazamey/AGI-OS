@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import { GovernanceGateway, PolicyDecision } from '@agi-os/governance';
 import { CostAuditor } from './cost-auditor.js';
 import { RedTeamAgent } from './red-team.js';
@@ -34,7 +34,7 @@ export class ReleaseGate {
   }
 
   runAllGates(version: string): ReleaseReport {
-    const start = Date.now();
+    Date.now();
     const gates: GateResult[] = [];
 
     gates.push(this.runSandboxEscape());

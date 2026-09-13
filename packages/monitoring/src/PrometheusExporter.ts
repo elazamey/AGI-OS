@@ -1,5 +1,5 @@
-import { MetricsCollector, MetricPoint } from './MetricsCollector.js';
-import { TokenTracker } from './TokenTracker.js';
+import type { MetricsCollector, MetricPoint } from './MetricsCollector.js';
+import type { TokenTracker } from './TokenTracker.js';
 
 export interface PrometheusConfig {
   prefix?: string;

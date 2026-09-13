@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { Kernel, createKernel } from '../src/index.js';
-import type { Event, Evidence } from '../src/types.js';
+import type { Kernel} from '../src/index.js';
+import { createKernel } from '../src/index.js';
+import type { Evidence } from '../src/types.js';
 
 describe('Kernel', () => {
   let kernel: Kernel;
@@ -98,7 +99,7 @@ describe('Kernel', () => {
       const handler = vi.fn();
       kernel.getEventBus().subscribe(handler);
 
-      const entity = await kernel.createEntity('goal', 'test-source');
+      await kernel.createEntity('goal', 'test-source');
 
       expect(handler).toHaveBeenCalledTimes(1);
       expect(handler).toHaveBeenCalledWith(

@@ -30,7 +30,7 @@ import {
   WRITE_REQUIRES_APPROVAL_POLICY,
   DANGEROUS_PATHS_DENY_POLICY,
 } from '../src/index.js';
-import type { ToolHandler, Capability } from '../src/index.js';
+import type { ToolHandler } from '../src/index.js';
 
 // ---------------------------------------------------------------------------
 // Mock Tool Handlers
@@ -200,7 +200,7 @@ describe('Gate 2.1 — Rejection Paths', () => {
       tools.capabilityRegistry.revoke(cap.id);
     }
 
-    const granted = tools.capabilityRegistry.grant({
+    tools.capabilityRegistry.grant({
       name: 'Read /safe only',
       description: 'Only allow reading /safe directory',
       toolId: 'filesystem.read',

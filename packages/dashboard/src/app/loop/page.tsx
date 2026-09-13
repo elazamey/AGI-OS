@@ -1,5 +1,5 @@
 import { ensureSeeded } from '@/lib/data';
-import { ArrowLeft, Cpu, Clock, CheckCircle, XCircle, SkipForward, Zap } from 'lucide-react';
+import { ArrowLeft, Cpu, CheckCircle, XCircle, SkipForward, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';

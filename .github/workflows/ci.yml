@@ -1,0 +1,213 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'arena/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PNPM_VERSION: '8.15.0'
+  NODE_VERSION: '20'
+
+# -----------------------------------------------------------------------------
+# Design note — why every job installs and builds for itself
+# -----------------------------------------------------------------------------
+# An earlier revision had a single `install` job that saved node_modules to
+# actions/cache, a `build` job that added dist/ to a second cache key, and every
+# other job restoring that key. It failed in exactly the way caches fail: the
+# build job went green and all four downstream jobs died within ~15 seconds
+# because their restore did not deliver a usable workspace. actions/cache is
+# documented as best-effort — keys can be evicted, saves can silently no-op, and
+# a restore miss is not an error. It is a speed optimisation, not a handoff
+# mechanism, and using it as the only path from one job to the next made CI
+# non-deterministic.
+#
+# Jobs are now self-contained: each installs from the frozen lockfile (with the
+# pnpm store cached, which IS a supported mechanism) and builds if it needs
+# dist/. They cost a few extra seconds of parallel setup and cannot fail because
+# someone else's cache entry went missing.
+#
+# Build order matters within a job: workspace packages resolve each other
+# through their BUILT declaration files (package.json `types: ./dist/index.d.ts`),
+# so `tsc --noEmit` before `pnpm -r build` produces TS2307 for every '@agi-os/*'
+# import — 166 errors on a clean runner.
+# -----------------------------------------------------------------------------
+
+jobs:
+  # ===========================================================================
+  # 1. Build — every package must compile (the Dockerfile depends on this too)
+  # ===========================================================================
+  build:
+    name: Build all packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+      - run: pnpm -r build
+
+  # ===========================================================================
+  # 2. Typecheck — `tsc --noEmit` against real declaration output. Not
+  #    redundant with build: packages built with tsup are not fully typechecked
+  #    by their build step, and this catches the missing-@types/node class of bug.
+  # ===========================================================================
+  typecheck:
+    name: Typecheck all packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          build: 'true'
+      - run: pnpm -r --no-bail typecheck
+
+  # ===========================================================================
+  # 3. Tests — full workspace suite. --no-bail so the first failure cannot hide
+  #    the rest of the results.
+  # ===========================================================================
+  test:
+    name: Unit + integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          build: 'true'
+      - run: pnpm test:all
+
+  # ===========================================================================
+  # 4. Lint — correctness rules are errors; known debt is warnings.
+  # ===========================================================================
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          build: 'true'
+      - run: pnpm lint:all
+
+  # ===========================================================================
+  # 5. Dependency audit — blocking gate. Documented, expiring exceptions live in
+  #    .pnpm-audit-allowlist.json. Needs no build.
+  # ===========================================================================
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Audit (high and above must be zero)
+        run: node scripts/audit-gate.mjs
+
+  # ===========================================================================
+  # 6. Workspace hygiene — structural invariants whose absence caused real
+  #    failures (a missing @types/node broke four packages on a fresh clone; an
+  #    inert `bin` meant the shipped CLI did nothing at all).
+  # ===========================================================================
+  hygiene:
+    name: Workspace hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Structural checks
+        run: node scripts/workspace-hygiene.mjs
+
+  # ===========================================================================
+  # 7. Sandbox escape regression — the PoCs from the readiness report must stay
+  #    dead. Runs against the BUILT sandbox, with and without the source
+  #    blocklist, at both isolation levels.
+  # ===========================================================================
+  security-poc:
+    name: Adversarial PoC regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          build: 'true'
+
+      - name: Run hostile PoC suite (independent of source blocklists)
+        run: pnpm --filter @agi-os/sandbox-adversarial test -- tests/hostile.test.ts
+
+      # Machine-checkable gate. It first proves the detector can SEE an escape —
+      # the previous version of this suite reported 18/18 "blocked" while
+      # executing nothing, because a capability lookup with no matching key
+      # always denied and decided the verdict before any code ran. A gate whose
+      # oracle cannot fail is decoration.
+      - name: Adversarial gate — zero escapes on every layer and isolation level
+        run: node scripts/adversarial-gate.mjs
+
+      - name: Run governance bypass PoC suite
+        run: pnpm --filter @agi-os/skill-executor test -- tests/governance-bypass.test.ts
+
+  # ===========================================================================
+  # 8. Docker images must build (the Dockerfile runs `pnpm build` inside)
+  # ===========================================================================
+  docker:
+    name: Docker image build
+    runs-on: ubuntu-latest
+    needs: [build, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          push: false
+          tags: agi-os:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Build dashboard image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: dashboard
+          push: false
+          tags: agi-os-dashboard:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===========================================================================
+  # Gate — single required check for branch protection
+  # ===========================================================================
+  ci-passed:
+    name: CI
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [build, typecheck, test, lint, security, hygiene, security-poc, docker]
+    steps:
+      - name: Verify all jobs succeeded
+        run: |
+          echo '${{ toJson(needs) }}' | node -e '
+            let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{
+              const n=JSON.parse(s);
+              const bad=Object.entries(n).filter(([,v])=>v.result!=="success").map(([k,v])=>k+"="+v.result);
+              if(bad.length){console.error("FAILED JOBS:",bad.join(", "));process.exit(1);}
+              console.log("All "+Object.keys(n).length+" jobs succeeded.");
+            });'

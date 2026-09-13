@@ -17,7 +17,8 @@ import {
 import { MissionStateMachine } from './state-machine.js';
 import { TaskManager, createTask } from './task.js';
 import { createTaskGraph } from './task-graph.js';
-import { MissionContextImpl, createMissionContext, MissionEventStore } from './mission-context.js';
+import type { MissionContextImpl} from './mission-context.js';
+import { createMissionContext, MissionEventStore } from './mission-context.js';
 
 // ---------------------------------------------------------------------------
 // Mission Manager - Creates and manages missions

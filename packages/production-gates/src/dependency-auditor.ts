@@ -1,4 +1,3 @@
-import { now } from '@agi-os/kernel';
 import type { DependencyAuditResult, Severity } from './types.js';
 
 const KNOWN_VULNERABILITIES: Record<string, { severity: Severity; advisory: string; fixVersion?: string }> = {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { EventLoop } from '../src/event-loop.js';
 import type { Perceivable, Plannable, Executable, Reflectable, Memorizable } from '../src/event-loop.js';
 

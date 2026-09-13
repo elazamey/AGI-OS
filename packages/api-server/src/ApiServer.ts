@@ -1,6 +1,8 @@
 import { generateId } from '@agi-os/kernel';
-import { LLMGateway, LLMRequestConfig } from '@agi-os/llm-gateway';
-import { MissionRuntime, TaskDefinition } from '@agi-os/mission-runtime';
+import type { LLMRequestConfig } from '@agi-os/llm-gateway';
+import { LLMGateway } from '@agi-os/llm-gateway';
+import type { TaskDefinition } from '@agi-os/mission-runtime';
+import { MissionRuntime } from '@agi-os/mission-runtime';
 
 export interface ApiServerConfig {
   port?: number;
@@ -161,7 +163,7 @@ export class ApiServer {
     return { status: 200, data: state, requestId: generateId() };
   }
 
-  private async handleHealth(req: ApiRequest): Promise<ApiResponse> {
+  private async handleHealth(_req: ApiRequest): Promise<ApiResponse> {
     return {
       status: 200,
       data: {

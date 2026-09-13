@@ -19,7 +19,7 @@ describe('SecurityAuditor', () => {
     it('should block eval()', () => {
       const result = SecurityAuditor.inspectPayload('eval("malicious code")');
       expect(result.passed).toBe(false);
-      require('child_process');
+      expect(result.threatLevel).toBe('CRITICAL');
     });
 
     it('should block child_process', () => {

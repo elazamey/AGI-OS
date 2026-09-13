@@ -1,4 +1,4 @@
-import { PermissionMatrix } from "./types.js";
+import type { PermissionMatrix } from "./types.js";
 
 export class PermissionMatrixTester {
   private matrix: PermissionMatrix[] = [];

@@ -2,12 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { HttpClient } from '../src/HttpClient.js';
 
 describe('HttpClient', () => {
-  let client: HttpClient;
-
-  beforeEach(() => {
-    client = new HttpClient({ defaultTimeoutMs: 5000 });
-  });
-
   it('should create with default options', () => {
     const defaultClient = new HttpClient();
     expect(defaultClient).toBeDefined();

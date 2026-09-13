@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import type { ConnectorContract, ConnectorState, ConnectorHealth, AuthCredentials, ConnectorResult } from './types.js';
 
 export abstract class ConnectorBase {

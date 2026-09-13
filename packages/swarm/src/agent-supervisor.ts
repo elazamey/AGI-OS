@@ -1,5 +1,5 @@
 import { now } from '@agi-os/kernel';
-import type { AgentProfile, DelegationRequest } from './types.js';
+import type { DelegationRequest } from './types.js';
 
 export interface AgentHealth {
   agentId: string;
@@ -42,7 +42,7 @@ export class AgentSupervisor {
     this.health.delete(agentId);
   }
 
-  taskStarted(agentId: string, delegationId: string): void {
+  taskStarted(agentId: string, _delegationId: string): void {
     const h = this.health.get(agentId);
     if (!h) return;
     h.activeTaskCount++;
@@ -50,7 +50,7 @@ export class AgentSupervisor {
     h.status = h.activeTaskCount >= 3 ? 'overloaded' : 'busy';
   }
 
-  taskCompleted(agentId: string, delegationId: string): void {
+  taskCompleted(agentId: string, _delegationId: string): void {
     const h = this.health.get(agentId);
     if (!h) return;
     h.activeTaskCount = Math.max(0, h.activeTaskCount - 1);

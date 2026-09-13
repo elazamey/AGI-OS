@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { now } from '@agi-os/kernel';
 import type { GateResult } from './types.js';
 
 export interface CostAuditEntry {

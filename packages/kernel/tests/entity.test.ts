@@ -9,7 +9,6 @@ import {
   validateEntity,
   InMemoryEntityStore
 } from '../src/entity.js';
-import type { Entity } from '../src/types.js';
 
 describe('Entity', () => {
   let store: InMemoryEntityStore;

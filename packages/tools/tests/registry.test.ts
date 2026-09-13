@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import type {
+  ToolRegistry} from '../src/tool-registry.js';
 import {
-  ToolRegistry,
   createToolRegistry,
   FILESYSTEM_READ_TOOL,
   FILESYSTEM_LIST_TOOL,
   GIT_STATUS_TOOL
 } from '../src/tool-registry.js';
-import type { ToolDefinition, ToolHandler } from '../src/types.js';
+import type { ToolHandler } from '../src/types.js';
 
 // ---------------------------------------------------------------------------
 // Mock Tool Handler

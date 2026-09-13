@@ -1,4 +1,4 @@
-import { BrowserSession } from './BrowserSession.js';
+import type { BrowserSession } from './BrowserSession.js';
 
 export interface ClickOptions {
   selector: string;
@@ -80,17 +80,17 @@ export class BrowserActions {
     if (!page) throw new Error('Browser not launched');
 
     if (options.attribute) {
-      return await page.getAttribute(options.selector, options.attribute);
+      return page.getAttribute(options.selector, options.attribute);
     }
 
-    return await page.textContent(options.selector);
+    return page.textContent(options.selector);
   }
 
   async extractAll(selector: string): Promise<string[]> {
     const page = await this.session.getPage();
     if (!page) throw new Error('Browser not launched');
 
-    return await page.$$eval(selector, (elements: Element[]) =>
+    return page.$$eval(selector, (elements: Element[]) =>
       elements.map(el => el.textContent || '')
     );
   }
@@ -99,7 +99,7 @@ export class BrowserActions {
     const page = await this.session.getPage();
     if (!page) throw new Error('Browser not launched');
 
-    return await page.evaluate(options.script, ...(options.args || []));
+    return page.evaluate(options.script, ...(options.args || []));
   }
 
   async waitForSelector(options: WaitForSelectorOptions): Promise<void> {

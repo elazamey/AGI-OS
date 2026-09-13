@@ -9,7 +9,6 @@ import {
   deserializeEvidence,
   validateEvidence
 } from '../src/evidence.js';
-import type { Evidence } from '../src/types.js';
 
 describe('Evidence', () => {
   describe('createCommandEvidence', () => {

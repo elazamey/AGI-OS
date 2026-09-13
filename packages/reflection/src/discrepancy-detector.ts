@@ -3,7 +3,7 @@
 // Classifies and ranks discrepancies by severity and type
 // ============================================================================
 
-import { generateId, now } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 import type {
   Discrepancy,
   DiscrepancyType,

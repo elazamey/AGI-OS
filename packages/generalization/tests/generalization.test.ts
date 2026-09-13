@@ -23,7 +23,7 @@ describe('GeneralizationEvaluator', () => {
 
     it('should have at least 3 scenarios per domain', () => {
       const counts = evaluator.getDomainCounts();
-      for (const [domain, count] of Object.entries(counts)) {
+      for (const count of Object.values(counts)) {
         expect(count).toBeGreaterThanOrEqual(3);
       }
     });

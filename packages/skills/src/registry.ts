@@ -1,5 +1,5 @@
-import { generateId, now } from '@agi-os/kernel';
-import type { SkillContract, SkillInstance, SkillExecutionRequest, SkillExecutionResult, SkillCategory, SkillStatus, EvidenceBundle } from './types.js';
+import { now } from '@agi-os/kernel';
+import type { SkillContract, SkillInstance, SkillExecutionResult, SkillCategory } from './types.js';
 
 export class SkillRegistry {
   private skills: Map<string, SkillInstance> = new Map();

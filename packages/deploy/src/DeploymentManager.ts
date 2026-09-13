@@ -79,7 +79,7 @@ export class DeploymentManager {
         components,
         timestamp: Date.now(),
       };
-    } catch (error: any) {
+    } catch (_error: any) {
       return {
         id,
         status: 'failed',

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { StateManager } from '../src/StateManager.js';
-import { MissionState } from '../src/MissionRuntime.js';
+import type { MissionState } from '../src/MissionRuntime.js';
 
 describe('StateManager', () => {
   let stateManager: StateManager;

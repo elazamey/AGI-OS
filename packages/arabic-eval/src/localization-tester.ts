@@ -34,6 +34,7 @@ export class LocalizationTester {
     if (filename.includes('/') || filename.includes('\\')) return false;
     if (filename === '.' || filename === '..') return false;
 
+    // eslint-disable-next-line no-control-regex -- intentional: C0 control characters are invalid in filenames
     const invalidChars = /[<>:"|?*\x00-\x1F]/;
     if (invalidChars.test(filename)) return false;
 

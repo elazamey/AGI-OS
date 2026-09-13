@@ -3,17 +3,37 @@
 // Calculates blast radius of proposed actions based on module + operation
 // ============================================================================
 
+import { isAbsolute, resolve } from 'node:path';
 import type { ActionIntent, RiskAssessment, RiskFactor } from './types.js';
 import { RiskLevel } from './types.js';
+import { normalizeModule, normalizeOperation } from './vocabulary.js';
+
+/** Scratch space POL-006 already treats as outside the protected filesystem. */
+const SCRATCH_ROOTS = ['/tmp/', '/var/tmp/', '/private/tmp/'];
 
 // ---------------------------------------------------------------------------
 // RiskEvaluator — scores every action intent
 // ---------------------------------------------------------------------------
 export class RiskEvaluator {
+  /** Roots whose contents the agent owns. Defaults to the process working dir. */
+  private readonly workspaceRoots: string[];
+
+  constructor(options?: { workspaceRoots?: string[] }) {
+    this.workspaceRoots = (options?.workspaceRoots ?? [process.cwd()]).map((r) => resolve(r));
+  }
+
   /**
    * Evaluate the risk of an action intent
    */
-  evaluate(intent: ActionIntent): RiskAssessment {
+  evaluate(rawIntent: ActionIntent): RiskAssessment {
+    // Score the canonicalised intent so that 'filesystem'/'terminal' callers are
+    // risk-rated exactly like 'fs'/'exec' callers.
+    const intent: ActionIntent = {
+      ...rawIntent,
+      module: normalizeModule(rawIntent.module),
+      operation: normalizeOperation(rawIntent.operation),
+    };
+
     const factors: RiskFactor[] = [];
     let score = 0;
 
@@ -23,10 +43,25 @@ export class RiskEvaluator {
       score += 60;
     }
 
-    // 2. Write operations → HIGH
-    if (intent.operation === 'write' || intent.operation === 'update' || intent.operation === 'modify') {
-      factors.push({ name: 'write_operation', contribution: 35, description: `Write operation: ${intent.operation}` });
-      score += 35;
+    // 2. Write operations.
+    //
+    // This used to be a flat +35, which the fs multiplier (x1.2) pushed to 42 —
+    // HIGH — for *every* filesystem write, including one inside the mission's
+    // own workspace. The risk override then escalated POL-009's explicit ALLOW
+    // to REQUIRE_APPROVAL and the agent could not write a file without a human.
+    //
+    // Blast radius depends on WHERE the write lands, not merely on the fact
+    // that it is a write: a small base for changing state, plus a large
+    // escalation when the target is outside the workspace.
+    if (['write', 'update', 'modify', 'append', 'create'].includes(intent.operation)) {
+      factors.push({ name: 'write_operation', contribution: 12, description: `Write operation: ${intent.operation}` });
+      score += 12;
+
+      const outside = this.outsideWorkspaceFactor(intent);
+      if (outside) {
+        factors.push(outside);
+        score += outside.contribution;
+      }
     }
 
     // 3. Execute operations → HIGH
@@ -92,9 +127,40 @@ export class RiskEvaluator {
 
   // ---- Private -----------------------------------------------------------
 
+  /**
+   * Escalation for a filesystem write whose target is not owned by the agent.
+   *
+   * Relative paths are workspace-scoped by construction. Scratch space (/tmp)
+   * is treated the same way POL-006 treats it. Everything else is a write into
+   * territory the agent does not own.
+   */
+  private outsideWorkspaceFactor(intent: ActionIntent): RiskFactor | null {
+    if (intent.module !== 'fs') return null;
+    const target = intent.target;
+    if (typeof target !== 'string' || target.length === 0) return null;
+    if (!isAbsolute(target)) return null;
+
+    const lower = target.toLowerCase();
+    if (SCRATCH_ROOTS.some((root) => lower.startsWith(root))) return null;
+
+    const resolved = resolve(target);
+    if (this.workspaceRoots.some((root) => resolved === root || resolved.startsWith(root.endsWith('/') ? root : root + '/'))) {
+      return null;
+    }
+
+    return {
+      name: 'write_outside_workspace',
+      contribution: 28,
+      description: `Write target "${target}" is outside the workspace (${this.workspaceRoots.join(', ')})`,
+    };
+  }
+
   private getModuleMultiplier(module: string): number {
     const multipliers: Record<string, number> = {
       fs: 1.2,
+      // Sandboxed execution already runs inside an enforced isolation boundary
+      // (@agi-os/sandbox); it is not additionally multiplied here.
+      sandbox: 1.0,
       db: 1.3,
       exec: 1.5,
       process: 1.4,
@@ -152,6 +218,6 @@ export class RiskEvaluator {
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
-export function createRiskEvaluator(): RiskEvaluator {
-  return new RiskEvaluator();
+export function createRiskEvaluator(options?: { workspaceRoots?: string[] }): RiskEvaluator {
+  return new RiskEvaluator(options);
 }

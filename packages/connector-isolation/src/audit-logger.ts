@@ -1,4 +1,4 @@
-import { generateId, now } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 import type { ConnectorAuditEntry } from './types.js';
 
 export class ConnectorAuditLogger {

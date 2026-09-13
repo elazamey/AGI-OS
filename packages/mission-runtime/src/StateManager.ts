@@ -1,4 +1,4 @@
-import { MissionState } from './MissionRuntime.js';
+import type { MissionState } from './MissionRuntime.js';
 
 export interface Checkpoint {
   missionId: string;

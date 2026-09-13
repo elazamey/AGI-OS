@@ -3,11 +3,10 @@
 // Compares expected vs actual outcomes to detect discrepancies
 // ============================================================================
 
-import { generateId, now } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 import type {
   MissionOutcome,
   Discrepancy,
-  DiscrepancyType,
   DiscrepancySeverity,
   ReflectionInput,
 } from './types.js';

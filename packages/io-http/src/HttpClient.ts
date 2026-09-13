@@ -1,4 +1,4 @@
-import { generateId, hash } from '@agi-os/kernel';
+import { generateId } from '@agi-os/kernel';
 
 export interface HttpRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';

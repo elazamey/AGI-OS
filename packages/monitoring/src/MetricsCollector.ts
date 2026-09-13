@@ -1,4 +1,3 @@
-import { generateId } from '@agi-os/kernel';
 
 export interface MetricPoint {
   name: string;
