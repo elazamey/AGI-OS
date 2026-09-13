@@ -12,7 +12,7 @@ export default function DashboardOverview() {
       <header className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">AGI OS Control Center</h1>
-          <p className="text-sm text-zinc-400 mt-1">Local-First Autonomous Agentic Framework (v1.2)</p>
+          <p className="text-sm text-zinc-400 mt-1">Local-First Autonomous Agentic Framework (v1.3)</p>
         </div>
         <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-lg">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -26,7 +26,7 @@ export default function DashboardOverview() {
             <span className="text-sm font-medium">Passing Tests</span>
             <Activity className="w-5 h-5 text-purple-400" />
           </div>
-          <p className="text-3xl font-extrabold text-white">909 / 909</p>
+          <p className="text-3xl font-extrabold text-white">1124 / 1124</p>
           <span className="text-xs text-emerald-400 mt-2 block">100% E2E Local Loop Verified</span>
         </div>
 

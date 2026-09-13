@@ -8,6 +8,31 @@ importers:
 
   .: {}
 
+  packages/benchmark:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/orchestrator':
+        specifier: workspace:*
+        version: link:../orchestrator
+      '@agi-os/providers':
+        specifier: workspace:*
+        version: link:../providers
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/cognition:
     dependencies:
       '@agi-os/kernel':
@@ -296,6 +321,25 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/sandbox:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/self-model:
     dependencies:
       '@agi-os/kernel':
@@ -305,6 +349,28 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/swarm:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/orchestrator':
+        specifier: workspace:*
+        version: link:../orchestrator
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
