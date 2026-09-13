@@ -511,6 +511,19 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
+  packages/deploy:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/generalization:
     dependencies:
       '@agi-os/governance':

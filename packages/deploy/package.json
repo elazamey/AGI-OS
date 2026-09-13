@@ -1,0 +1,24 @@
+{
+  "name": "@agi-os/deploy",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "docker:build": "docker build -t agi-os:latest .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "k8s:apply": "kubectl apply -f k8s/",
+    "k8s:delete": "kubectl delete -f k8s/"
+  },
+  "dependencies": {
+    "@agi-os/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}
