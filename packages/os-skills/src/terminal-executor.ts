@@ -49,6 +49,37 @@ const EXIT_REFUSED = 126;
 /** Shell convention for "command not found" — a spawn that never started. */
 const EXIT_NOT_FOUND = 127;
 
+/**
+ * Spawn failures that describe the host, not the command.
+ *
+ * Under process pressure — a CI runner executing several test files in parallel,
+ * each spawning children — `fork` can fail with EAGAIN even though the command
+ * is perfectly runnable. Reporting that as "the command failed" is a lie about
+ * the program, and it makes the suite red for reasons that have nothing to do
+ * with the code under test. These are retried a bounded number of times.
+ *
+ * ENOENT is deliberately absent: a missing binary is a permanent fact about the
+ * command and must be reported immediately as 127.
+ */
+const TRANSIENT_SPAWN_ERRNOS = new Set(['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM', 'EBUSY']);
+
+/**
+ * Whether a spawn errno describes the host rather than the command.
+ *
+ * Exported because the retry policy is worth testing directly: inducing EAGAIN
+ * portably is not practical, and a classification that wrongly included ENOENT
+ * would turn a missing binary into four pointless attempts.
+ */
+export function isTransientSpawnError(errno: string | null | undefined): boolean {
+  return typeof errno === 'string' && TRANSIENT_SPAWN_ERRNOS.has(errno);
+}
+
+/** Attempts for a transient spawn failure, with a short linear backoff. */
+const DEFAULT_SPAWN_ATTEMPTS = 4;
+const SPAWN_RETRY_DELAY_MS = 120;
+
+const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_BUFFER_BYTES = 4 * 1024 * 1024;
 const DEFAULT_HISTORY_LIMIT = 200;
@@ -202,6 +233,11 @@ export interface TerminalExecutorParams {
   maxBufferBytes?: number;
   /** Bound on retained history, so a long-lived executor cannot grow forever. */
   historyLimit?: number;
+  /**
+   * Attempts allowed when a spawn fails with a transient host errno (EAGAIN and
+   * friends). Set to 1 to disable retrying.
+   */
+  spawnAttempts?: number;
   /** Governance gateway; a real one is created if omitted. */
   governance?: GovernanceGateway;
   /** Extra environment variables, added to the allowlisted base. */
@@ -216,6 +252,7 @@ export class TerminalExecutor {
   private readonly timeoutMs: number;
   private readonly maxBufferBytes: number;
   private readonly historyLimit: number;
+  private readonly spawnAttempts: number;
   private readonly governance: GovernanceGateway;
   private readonly baseEnv: Record<string, string>;
 
@@ -226,6 +263,7 @@ export class TerminalExecutor {
     this.timeoutMs = params.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.maxBufferBytes = params.maxBufferBytes ?? DEFAULT_MAX_BUFFER_BYTES;
     this.historyLimit = Math.max(1, params.historyLimit ?? DEFAULT_HISTORY_LIMIT);
+    this.spawnAttempts = Math.max(1, params.spawnAttempts ?? DEFAULT_SPAWN_ATTEMPTS);
     this.governance = params.governance ?? new GovernanceGateway({ workspaceRoots: [this.rootDir] });
     this.baseEnv = this.buildEnv(params.env);
   }
@@ -367,7 +405,28 @@ export class TerminalExecutor {
     const maxBuffer = Math.max(1024, options.maxBufferBytes ?? this.maxBufferBytes);
     const env = options.env ? { ...this.baseEnv, ...options.env } : this.baseEnv;
 
-    const run = await this.spawn(argv[0], argv.slice(1), { cwd, env, timeoutMs, maxBuffer, stdin: options.stdin });
+    const spawnOpts = { cwd, env, timeoutMs, maxBuffer, stdin: options.stdin };
+    let run = await this.spawn(argv[0], argv.slice(1), spawnOpts);
+
+    // A transient host failure is not the command's fault, so retry it a bounded
+    // number of times with a linear backoff. Anything permanent — a missing
+    // binary, a timeout, a real non-zero exit — is reported on the first pass.
+    for (
+      let attempt = 2;
+      attempt <= this.spawnAttempts && isTransientSpawnError(run.errno);
+      attempt++
+    ) {
+      await delay(SPAWN_RETRY_DELAY_MS * (attempt - 1));
+      run = await this.spawn(argv[0], argv.slice(1), spawnOpts);
+    }
+
+    // If the host never let the child start, say that plainly instead of
+    // presenting a bare errno as though the program had run and failed.
+    const exhausted = isTransientSpawnError(run.errno);
+    const stderr = exhausted
+      ? (run.stderr || 'spawn failed with ' + run.errno) +
+        ' (host could not start a child process after ' + this.spawnAttempts + ' attempts)'
+      : run.stderr;
 
     return this.record({
       command,
@@ -376,7 +435,7 @@ export class TerminalExecutor {
       cwd,
       exitCode: run.exitCode,
       stdout: run.stdout,
-      stderr: run.stderr,
+      stderr,
       duration: Date.now() - startedAt,
       timedOut: run.timedOut,
       killed: run.killed,
@@ -418,6 +477,8 @@ export class TerminalExecutor {
     killed: boolean;
     signal?: string;
     truncated: boolean;
+    /** The spawn errno when the process never started, else null. */
+    errno: string | null;
   }> {
     return new Promise((resolvePromise) => {
       let settled = false;
@@ -446,7 +507,7 @@ export class TerminalExecutor {
           const err = String(stderr ?? '');
 
           if (!error) {
-            resolvePromise({ exitCode: 0, stdout: out, stderr: err, timedOut: false, killed: false, truncated });
+            resolvePromise({ exitCode: 0, stdout: out, stderr: err, timedOut: false, killed: false, truncated, errno: null });
             return;
           }
 
@@ -468,6 +529,7 @@ export class TerminalExecutor {
               killed: true,
               signal: anyErr.signal,
               truncated,
+              errno: null,
             });
             return;
           }
@@ -485,6 +547,7 @@ export class TerminalExecutor {
               killed: true,
               signal: anyErr.signal ?? 'SIGKILL',
               truncated,
+              errno: null,
             });
             return;
           }
@@ -511,6 +574,7 @@ export class TerminalExecutor {
             killed: anyErr.killed === true,
             signal: anyErr.signal,
             truncated,
+            errno: spawnCode,
           });
         }
       );
@@ -575,6 +639,11 @@ export class TerminalExecutor {
   /** Only results where a child process actually ran and exited zero. */
   getSuccessful(): TerminalResult[] {
     return this.history.filter((r) => !r.refused && r.exitCode === 0);
+  }
+
+  /** Attempts permitted for a transient spawn failure. Clamped to at least 1. */
+  getSpawnAttempts(): number {
+    return this.spawnAttempts;
   }
 
   getAllowedCommands(): string[] {

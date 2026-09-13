@@ -84,7 +84,28 @@ jobs:
           pnpm-version: ${{ env.PNPM_VERSION }}
           node-version: ${{ env.NODE_VERSION }}
           build: 'true'
-      - run: pnpm test:all
+      # `tee` keeps the complete output on the runner so it can be published when
+      # the suite fails. `set -o pipefail` is essential here: without it the
+      # step's exit code is tee's — always 0 — and a red suite would report
+      # green. This exact masking bug was hit earlier with a lint pipe.
+      - name: Run the full workspace suite
+        shell: bash
+        run: |
+          set -o pipefail
+          pnpm test:all 2>&1 | tee test-output.log
+
+      # Job logs cannot be retrieved through the API from this environment: the
+      # blob-storage redirect ends in EOF, which left three consecutive test
+      # failures undiagnosable and forced blind local reproduction. Artifacts are
+      # downloadable, so publish the output whenever the suite does not pass.
+      - name: Publish test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-output.log
+          if-no-files-found: warn
+          retention-days: 7
 
   # ===========================================================================
   # 4. Lint — correctness rules are errors; known debt is warnings.

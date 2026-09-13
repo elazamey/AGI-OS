@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, chmodSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { TerminalExecutor, tokenize } from '../src/terminal-executor.js';
+import { TerminalExecutor, tokenize, isTransientSpawnError } from '../src/terminal-executor.js';
 import { GovernanceGateway, PolicyEngine, PolicyDecision } from '@agi-os/governance';
 
 /**
@@ -321,6 +321,41 @@ describe('TerminalExecutor', () => {
       expect(result.exitCode).toBe(0);
       expect(result.refused).toBeUndefined();
       expect(result.stdout.trim()).toBe('object');
+    });
+  });
+
+  describe('transient spawn failures', () => {
+    it('classifies host resource errors as retryable', () => {
+      for (const errno of ['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM', 'EBUSY']) {
+        expect(isTransientSpawnError(errno), errno).toBe(true);
+      }
+    });
+
+    it('never retries a permanent spawn failure', () => {
+      // A missing binary is a fact about the command, not about host pressure.
+      // Retrying it would burn four attempts and still report 127.
+      for (const errno of ['ENOENT', 'EACCES', 'EPERM', 'ENOBUFS', null, undefined, '']) {
+        expect(isTransientSpawnError(errno), String(errno)).toBe(false);
+      }
+    });
+
+    it('reports a missing binary immediately rather than after the retry budget', async () => {
+      const retrying = new TerminalExecutor({
+        rootDir: jail,
+        spawnAttempts: 4,
+        allowed: ['definitely-not-installed-xyz'],
+      });
+      const result = await retrying.execute('definitely-not-installed-xyz');
+      expect(result.exitCode).toBe(127);
+      // The linear backoff would add 120+240+360 = 720ms if ENOENT were retried.
+      expect(result.duration).toBeLessThan(500);
+    });
+
+    it('clamps the attempt budget to at least one', () => {
+      expect(new TerminalExecutor({ rootDir: jail }).getSpawnAttempts()).toBe(4);
+      expect(new TerminalExecutor({ rootDir: jail, spawnAttempts: 0 }).getSpawnAttempts()).toBe(1);
+      expect(new TerminalExecutor({ rootDir: jail, spawnAttempts: -5 }).getSpawnAttempts()).toBe(1);
+      expect(new TerminalExecutor({ rootDir: jail, spawnAttempts: 2 }).getSpawnAttempts()).toBe(2);
     });
   });
 
