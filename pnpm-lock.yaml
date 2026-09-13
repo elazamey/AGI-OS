@@ -8,6 +8,75 @@ importers:
 
   .: {}
 
+  packages/agent-brain:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/memory':
+        specifier: workspace:*
+        version: link:../memory
+      '@agi-os/missions':
+        specifier: workspace:*
+        version: link:../missions
+      '@agi-os/providers':
+        specifier: workspace:*
+        version: link:../providers
+      '@agi-os/skill-executor':
+        specifier: workspace:*
+        version: link:../skill-executor
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/agent-quality:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/arabic-eval:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/artifact-skills:
     dependencies:
       '@agi-os/kernel':
@@ -52,6 +121,25 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/benchmark-integrity:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/browser-skills:
     dependencies:
       '@agi-os/kernel':
@@ -60,6 +148,142 @@ importers:
       '@agi-os/skills':
         specifier: workspace:*
         version: link:../skills
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/certification:
+    dependencies:
+      '@agi-os/agent-brain':
+        specifier: workspace:*
+        version: link:../agent-brain
+      '@agi-os/agent-quality':
+        specifier: workspace:*
+        version: link:../agent-quality
+      '@agi-os/arabic-eval':
+        specifier: workspace:*
+        version: link:../arabic-eval
+      '@agi-os/artifact-skills':
+        specifier: workspace:*
+        version: link:../artifact-skills
+      '@agi-os/benchmark-integrity':
+        specifier: workspace:*
+        version: link:../benchmark-integrity
+      '@agi-os/browser-skills':
+        specifier: workspace:*
+        version: link:../browser-skills
+      '@agi-os/coding-skills':
+        specifier: workspace:*
+        version: link:../coding-skills
+      '@agi-os/cognition':
+        specifier: workspace:*
+        version: link:../cognition
+      '@agi-os/connectors':
+        specifier: workspace:*
+        version: link:../connectors
+      '@agi-os/core-skills':
+        specifier: workspace:*
+        version: link:../core-skills
+      '@agi-os/generalization':
+        specifier: workspace:*
+        version: link:../generalization
+      '@agi-os/git-skills':
+        specifier: workspace:*
+        version: link:../git-skills
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/invariant-tests':
+        specifier: workspace:*
+        version: link:../invariant-tests
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/long-horizon-eval':
+        specifier: workspace:*
+        version: link:../long-horizon-eval
+      '@agi-os/memory':
+        specifier: workspace:*
+        version: link:../memory
+      '@agi-os/memory-skills':
+        specifier: workspace:*
+        version: link:../memory-skills
+      '@agi-os/missions':
+        specifier: workspace:*
+        version: link:../missions
+      '@agi-os/multi-agent-eval':
+        specifier: workspace:*
+        version: link:../multi-agent-eval
+      '@agi-os/orchestrator':
+        specifier: workspace:*
+        version: link:../orchestrator
+      '@agi-os/os-skills':
+        specifier: workspace:*
+        version: link:../os-skills
+      '@agi-os/persistence':
+        specifier: workspace:*
+        version: link:../persistence
+      '@agi-os/production-gates':
+        specifier: workspace:*
+        version: link:../production-gates
+      '@agi-os/production-ops':
+        specifier: workspace:*
+        version: link:../production-ops
+      '@agi-os/providers':
+        specifier: workspace:*
+        version: link:../providers
+      '@agi-os/real-skills':
+        specifier: workspace:*
+        version: link:../real-skills
+      '@agi-os/recovery-skills':
+        specifier: workspace:*
+        version: link:../recovery-skills
+      '@agi-os/reflection':
+        specifier: workspace:*
+        version: link:../reflection
+      '@agi-os/research-skills':
+        specifier: workspace:*
+        version: link:../research-skills
+      '@agi-os/resilience-tests':
+        specifier: workspace:*
+        version: link:../resilience-tests
+      '@agi-os/sandbox-adversarial':
+        specifier: workspace:*
+        version: link:../sandbox-adversarial
+      '@agi-os/security-gates':
+        specifier: workspace:*
+        version: link:../security-gates
+      '@agi-os/security-skills':
+        specifier: workspace:*
+        version: link:../security-skills
+      '@agi-os/self-model':
+        specifier: workspace:*
+        version: link:../self-model
+      '@agi-os/skill-executor':
+        specifier: workspace:*
+        version: link:../skill-executor
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+      '@agi-os/swarm':
+        specifier: workspace:*
+        version: link:../swarm
+      '@agi-os/tools':
+        specifier: workspace:*
+        version: link:../tools
+      '@agi-os/trust-evaluation':
+        specifier: workspace:*
+        version: link:../trust-evaluation
+      '@agi-os/verification-skills':
+        specifier: workspace:*
+        version: link:../verification-skills
     devDependencies:
       tsup:
         specifier: ^8.0.0
@@ -108,6 +332,22 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/connector-isolation:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
@@ -183,8 +423,8 @@ importers:
         specifier: ^0.400.0
         version: 0.400.0(react@18.3.1)
       next:
-        specifier: 14.2.0
-        version: 14.2.0(react-dom@18.3.1)(react@18.3.1)
+        specifier: 14.2.15
+        version: 14.2.15(react-dom@18.3.1)(react@18.3.1)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -283,6 +523,21 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/invariant-tests:
+    devDependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/kernel:
     devDependencies:
       '@types/node':
@@ -296,6 +551,22 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/long-horizon-eval:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.43)
 
   packages/memory:
@@ -348,6 +619,21 @@ importers:
       '@types/node':
         specifier: ^20.11.0
         version: 20.19.43
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/multi-agent-eval:
+    devDependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(typescript@5.9.3)
@@ -417,6 +703,63 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/persistence:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/missions':
+        specifier: workspace:*
+        version: link:../missions
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/production-gates:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/security-gates':
+        specifier: workspace:*
+        version: link:../security-gates
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/production-ops:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.4.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/providers:
     dependencies:
       '@agi-os/kernel':
@@ -443,6 +786,31 @@ importers:
         version: 8.5.1(typescript@5.9.3)
       typescript:
         specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/real-skills:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/providers':
+        specifier: workspace:*
+        version: link:../providers
+      '@agi-os/skill-executor':
+        specifier: workspace:*
+        version: link:../skill-executor
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.3.3
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
@@ -511,7 +879,45 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/resilience-tests:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/sandbox:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/sandbox-adversarial:
     dependencies:
       '@agi-os/governance':
         specifier: workspace:*
@@ -599,6 +1005,28 @@ importers:
         specifier: ^1.2.0
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/skill-executor:
+    dependencies:
+      '@agi-os/governance':
+        specifier: workspace:*
+        version: link:../governance
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skills':
+        specifier: workspace:*
+        version: link:../skills
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/skills:
     dependencies:
       '@agi-os/governance':
@@ -660,6 +1088,22 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/trust-evaluation:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.43)
 
   packages/verification-skills:
@@ -1173,12 +1617,12 @@ packages:
     dev: true
     optional: true
 
-  /@next/env@14.2.0:
-    resolution: {integrity: sha512-4+70ELtSbRtYUuyRpAJmKC8NHBW2x1HMje9KO2Xd7IkoyucmV9SjgO+qeWMC0JWkRQXgydv1O7yKOK8nu/rITQ==}
+  /@next/env@14.2.15:
+    resolution: {integrity: sha512-S1qaj25Wru2dUpcIZMjxeMVSwkt8BK4dmWHHiBuRstcIyOsMapqT4A4jSB6onvqeygkSSmOkyny9VVx8JIGamQ==}
     dev: false
 
-  /@next/swc-darwin-arm64@14.2.0:
-    resolution: {integrity: sha512-kHktLlw0AceuDnkVljJ/4lTJagLzDiO3klR1Fzl2APDFZ8r+aTxNaNcPmpp0xLMkgRwwk6sggYeqq0Rz9K4zzA==}
+  /@next/swc-darwin-arm64@14.2.15:
+    resolution: {integrity: sha512-Rvh7KU9hOUBnZ9TJ28n2Oa7dD9cvDBKua9IKx7cfQQ0GoYUwg9ig31O2oMwH3wm+pE3IkAQ67ZobPfEgurPZIA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
@@ -1186,8 +1630,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-darwin-x64@14.2.0:
-    resolution: {integrity: sha512-HFSDu7lb1U3RDxXNeKH3NGRR5KyTPBSUTuIOr9jXoAso7i76gNYvnTjbuzGVWt2X5izpH908gmOYWtI7un+JrA==}
+  /@next/swc-darwin-x64@14.2.15:
+    resolution: {integrity: sha512-5TGyjFcf8ampZP3e+FyCax5zFVHi+Oe7sZyaKOngsqyaNEpOgkKB3sqmymkZfowy3ufGA/tUgDPPxpQx931lHg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
@@ -1195,8 +1639,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-arm64-gnu@14.2.0:
-    resolution: {integrity: sha512-iQsoWziO5ZMxDWZ4ZTCAc7hbJ1C9UDj/gATSqTaMjW2bJFwAsvf9UM79AKnljBl73uPZ+V0kH4rvnHTco4Ps2w==}
+  /@next/swc-linux-arm64-gnu@14.2.15:
+    resolution: {integrity: sha512-3Bwv4oc08ONiQ3FiOLKT72Q+ndEMyLNsc/D3qnLMbtUYTQAmkx9E/JRu0DBpHxNddBmNT5hxz1mYBphJ3mfrrw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -1204,8 +1648,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-arm64-musl@14.2.0:
-    resolution: {integrity: sha512-0JOk2uzLUt8fJK5LpsKKZa74zAch7bJjjgJzR9aOMs231AlE4gPYzsSm430ckZitjPGKeH5bgDZjqwqJQKIS2w==}
+  /@next/swc-linux-arm64-musl@14.2.15:
+    resolution: {integrity: sha512-k5xf/tg1FBv/M4CMd8S+JL3uV9BnnRmoe7F+GWC3DxkTCD9aewFRH1s5rJ1zkzDa+Do4zyN8qD0N8c84Hu96FQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -1213,8 +1657,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-x64-gnu@14.2.0:
-    resolution: {integrity: sha512-uYHkuTzX0NM6biKNp7hdKTf+BF0iMV254SxO0B8PgrQkxUBKGmk5ysHKB+FYBfdf9xei/t8OIKlXJs9ckD943A==}
+  /@next/swc-linux-x64-gnu@14.2.15:
+    resolution: {integrity: sha512-kE6q38hbrRbKEkkVn62reLXhThLRh6/TvgSP56GkFNhU22TbIrQDEMrO7j0IcQHcew2wfykq8lZyHFabz0oBrA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -1222,8 +1666,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-linux-x64-musl@14.2.0:
-    resolution: {integrity: sha512-paN89nLs2dTBDtfXWty1/NVPit+q6ldwdktixYSVwiiAz647QDCd+EIYqoiS+/rPG3oXs/A7rWcJK9HVqfnMVg==}
+  /@next/swc-linux-x64-musl@14.2.15:
+    resolution: {integrity: sha512-PZ5YE9ouy/IdO7QVJeIcyLn/Rc4ml9M2G4y3kCM9MNf1YKvFY4heg3pVa/jQbMro+tP6yc4G2o9LjAz1zxD7tQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -1231,8 +1675,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-win32-arm64-msvc@14.2.0:
-    resolution: {integrity: sha512-j1oiidZisnymYjawFqEfeGNcE22ZQ7lGUaa4pGOCVWrWeIDkPSj8zYgS9TzMNlg17Q3wSWCQC/F5uJAhSh7qcA==}
+  /@next/swc-win32-arm64-msvc@14.2.15:
+    resolution: {integrity: sha512-2raR16703kBvYEQD9HNLyb0/394yfqzmIeyp2nDzcPV4yPjqNUG3ohX6jX00WryXz6s1FXpVhsCo3i+g4RUX+g==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
@@ -1240,8 +1684,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-win32-ia32-msvc@14.2.0:
-    resolution: {integrity: sha512-6ff6F4xb+QGD1jhx/dOT9Ot7PQ/GAYekV9ykwEh2EFS/cLTyU4Y3cXkX5cNtNIhpctS5NvyjW9gIksRNErYE0A==}
+  /@next/swc-win32-ia32-msvc@14.2.15:
+    resolution: {integrity: sha512-fyTE8cklgkyR1p03kJa5zXEaZ9El+kDNM5A+66+8evQS5e/6v0Gk28LqA0Jet8gKSOyP+OTm/tJHzMlGdQerdQ==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
@@ -1249,8 +1693,8 @@ packages:
     dev: false
     optional: true
 
-  /@next/swc-win32-x64-msvc@14.2.0:
-    resolution: {integrity: sha512-09DbG5vXAxz0eTFSf1uebWD36GF3D5toynRkgo2AlSrxwGZkWtJ1RhmrczRYQ17eD5bdo4FZ0ibiffdq5kc4vg==}
+  /@next/swc-win32-x64-msvc@14.2.15:
+    resolution: {integrity: sha512-SzqGbsLsP9OwKNUG9nekShTwhj6JSB9ZLMWQ8g1gG6hdE5gQLncbnbymrwy2yVmH9nikSLYRYxYMFu78Ggp7/g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -2285,8 +2729,8 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  /next@14.2.0(react-dom@18.3.1)(react@18.3.1):
-    resolution: {integrity: sha512-2T41HqJdKPqheR27ll7MFZ3gtTYvGew7cUc0PwPSyK9Ao5vvwpf9bYfP4V5YBGLckHF2kEGvrLte5BqLSv0s8g==}
+  /next@14.2.15(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-h9ctmOokpoDphRvMGnwOJAedT6zKhwqyZML9mDtspgf4Rh3Pn7UTYKqePNoDvhsWBAO5GoPNYshnAUGIazVGmw==}
     engines: {node: '>=18.17.0'}
     deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/security-update-2025-12-11 for more details.
     hasBin: true
@@ -2304,7 +2748,7 @@ packages:
       sass:
         optional: true
     dependencies:
-      '@next/env': 14.2.0
+      '@next/env': 14.2.15
       '@swc/helpers': 0.5.5
       busboy: 1.6.0
       caniuse-lite: 1.0.30001810
@@ -2314,15 +2758,15 @@ packages:
       react-dom: 18.3.1(react@18.3.1)
       styled-jsx: 5.1.1(react@18.3.1)
     optionalDependencies:
-      '@next/swc-darwin-arm64': 14.2.0
-      '@next/swc-darwin-x64': 14.2.0
-      '@next/swc-linux-arm64-gnu': 14.2.0
-      '@next/swc-linux-arm64-musl': 14.2.0
-      '@next/swc-linux-x64-gnu': 14.2.0
-      '@next/swc-linux-x64-musl': 14.2.0
-      '@next/swc-win32-arm64-msvc': 14.2.0
-      '@next/swc-win32-ia32-msvc': 14.2.0
-      '@next/swc-win32-x64-msvc': 14.2.0
+      '@next/swc-darwin-arm64': 14.2.15
+      '@next/swc-darwin-x64': 14.2.15
+      '@next/swc-linux-arm64-gnu': 14.2.15
+      '@next/swc-linux-arm64-musl': 14.2.15
+      '@next/swc-linux-x64-gnu': 14.2.15
+      '@next/swc-linux-x64-musl': 14.2.15
+      '@next/swc-win32-arm64-msvc': 14.2.15
+      '@next/swc-win32-ia32-msvc': 14.2.15
+      '@next/swc-win32-x64-msvc': 14.2.15
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros

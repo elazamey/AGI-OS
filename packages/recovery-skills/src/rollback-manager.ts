@@ -10,7 +10,7 @@ export class RollbackManager {
   }
 
   rollback(checkpointId: string): RollbackResult {
-    const checkpoint = this.checkpoints.getCheckpoints('').find(c => c.id === checkpointId);
+    const checkpoint = this.checkpoints.getCheckpointById(checkpointId);
     if (!checkpoint) {
       return { checkpointId, restored: false, restoredState: {}, timestamp: now().toISOString() };
     }

@@ -29,6 +29,10 @@ export class CheckpointManager {
     return this.checkpoints.find(c => c.missionId === missionId && c.stepId === stepId);
   }
 
+  getCheckpointById(checkpointId: string): Checkpoint | undefined {
+    return this.checkpoints.find(c => c.id === checkpointId);
+  }
+
   clear(missionId?: string): void {
     if (missionId) this.checkpoints = this.checkpoints.filter(c => c.missionId !== missionId);
     else this.checkpoints = [];
