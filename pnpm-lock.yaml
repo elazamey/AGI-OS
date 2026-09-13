@@ -140,6 +140,22 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.43)
 
+  packages/browser:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      playwright:
+        specifier: ^1.40.0
+        version: 1.63.0
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/browser-skills:
     dependencies:
       '@agi-os/kernel':
@@ -2892,6 +2908,20 @@ packages:
       mlly: 1.8.2
       pathe: 2.0.3
     dev: true
+
+  /playwright-core@1.63.0:
+    resolution: {integrity: sha512-rYCsBF/M5HjUch52bbtVONEFjv6Xu8sm8h72dNlR5bzIE1fvC/bxgspzkjSfU+MweEMmPM8KJebG6nnyxo5mCg==}
+    engines: {node: '>=20'}
+    hasBin: true
+    dev: false
+
+  /playwright@1.63.0:
+    resolution: {integrity: sha512-+7ziBLidS4NaNCdt57SUDT+wYmmd5fmiQejUic/kb+YsYSCPyOOE9sebzMjNmQrsnNpDJqd4WHvV/8lfKfUDUg==}
+    engines: {node: '>=20'}
+    hasBin: true
+    dependencies:
+      playwright-core: 1.63.0
+    dev: false
 
   /postcss-import@15.1.0(postcss@8.5.28):
     resolution: {integrity: sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==}
