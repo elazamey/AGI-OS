@@ -65,8 +65,8 @@ cd packages/arena-eval && pnpm test
 **Links:**
 
 - GitHub: https://github.com/elazamey/agi-system
-- Live Demo: https://elazamey.github.io/agi-system/
-- Leaderboard: https://elazamey.github.io/agi-system/leaderboard
-- API Docs: https://elazamey.github.io/agi-system/docs
+- Live Demo: https://elazamey.github.io/AGI-OS/
+- Leaderboard: https://elazamey.github.io/AGI-OS/leaderboard
+- API Docs: https://elazamey.github.io/AGI-OS/docs
 
 We welcome feedback on the governance model and benchmark methodology.

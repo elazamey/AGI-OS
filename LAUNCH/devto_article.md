@@ -136,9 +136,9 @@ console.log(result.output);
 
 **Links:**
 - GitHub: https://github.com/elazamey/agi-system
-- Live Demo: https://elazamey.github.io/agi-system/
-- Leaderboard: https://elazamey.github.io/agi-system/leaderboard
-- API Docs: https://elazamey.github.io/agi-system/docs
+- Live Demo: https://elazamey.github.io/AGI-OS/
+- Leaderboard: https://elazamey.github.io/AGI-OS/leaderboard
+- API Docs: https://elazamey.github.io/AGI-OS/docs
 
 ---
 

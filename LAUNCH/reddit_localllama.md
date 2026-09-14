@@ -60,9 +60,9 @@ result = client.agent.execute(prompt="Analyze my codebase")
 **Links:**
 
 - GitHub: https://github.com/elazamey/agi-system
-- Live UI: https://elazamey.github.io/agi-system/
-- Leaderboard: https://elazamey.github.io/agi-system/leaderboard
-- API Docs: https://elazamey.github.io/agi-system/docs
+- Live UI: https://elazamey.github.io/AGI-OS/
+- Leaderboard: https://elazamey.github.io/AGI-OS/leaderboard
+- API Docs: https://elazamey.github.io/AGI-OS/docs
 
 **What's Next:**
 
