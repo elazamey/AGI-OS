@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 export const agiClient = new OpenAI({
-  baseURL: process.env.NEXT_PUBLIC_AGI_GATEWAY_URL || 'http://localhost:4000/v1',
+  baseURL: process.env.NEXT_PUBLIC_AGI_GATEWAY_URL || 'https://elazamey-agi-system.hf.space/v1',
   apiKey: process.env.NEXT_PUBLIC_AGI_API_KEY || 'agi-os-dev-key-2026',
   dangerouslyAllowBrowser: true,
 });

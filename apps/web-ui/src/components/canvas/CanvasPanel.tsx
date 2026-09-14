@@ -13,14 +13,14 @@ export function CanvasPanel() {
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const res = await fetch('http://localhost:4000/health');
+        const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://elazamey-agi-system.hf.space/health');
         const data = await res.json();
         setHealth(data.data || data);
       } catch { /* ignore */ }
     };
     const fetchModels = async () => {
       try {
-        const res = await fetch('http://localhost:4000/v1/models');
+        const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://elazamey-agi-system.hf.space/v1/models');
         const data = await res.json();
         setModels(data.data || []);
       } catch { /* ignore */ }

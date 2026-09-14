@@ -25,7 +25,7 @@ export default function Home() {
             Live
           </span>
           <span className="chip chip-cyan">L4 Compliant</span>
-          <span className="text-[10px] text-agi-muted">localhost:4000</span>
+          <span className="text-[10px] text-agi-muted">elazamey-agi-system.hf.space</span>
         </div>
       </header>
 

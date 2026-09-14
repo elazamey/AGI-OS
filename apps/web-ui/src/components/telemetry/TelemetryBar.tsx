@@ -10,7 +10,7 @@ export function TelemetryBar() {
   useEffect(() => {
     const check = async () => {
       try {
-        const res = await fetch('http://localhost:4000/health');
+        const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://elazamey-agi-system.hf.space/health');
         setConnected(res.ok);
       } catch { setConnected(false); }
     };
