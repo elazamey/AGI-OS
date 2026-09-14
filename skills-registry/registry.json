@@ -1,6 +1,6 @@
 {
   "name": "skills-registry",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "AGI-OS Dynamic Skills Registry",
   "owner": "elazamey",
   "skills": [
@@ -82,6 +82,70 @@
       "description": "Search files by name or content",
       "triggers": ["find", "search", "grep", "locate"],
       "category": "utility",
+      "status": "LOADED"
+    },
+    {
+      "id": "auto-patcher-and-audit",
+      "name": "auto-patcher-and-audit",
+      "description": "Scans dependencies for vulnerabilities and auto-applies non-breaking security updates",
+      "triggers": ["audit", "patch", "security-scan", "update-deps", "vulnerability"],
+      "category": "security",
+      "status": "LOADED"
+    },
+    {
+      "id": "secret-rotation-guard",
+      "name": "secret-rotation-guard",
+      "description": "Detects and rotates exposed API keys and secrets with encrypted storage",
+      "triggers": ["secrets", "rotate", "api-keys", "vault", "leak"],
+      "category": "security",
+      "status": "LOADED"
+    },
+    {
+      "id": "k8s-manifest-generator",
+      "name": "k8s-manifest-generator",
+      "description": "Generates and validates Kubernetes manifests and Helm charts in sandbox",
+      "triggers": ["kubernetes", "k8s", "helm", "deploy", "manifest"],
+      "category": "devops",
+      "status": "LOADED"
+    },
+    {
+      "id": "db-migration-verifier",
+      "name": "db-migration-verifier",
+      "description": "Validates database migrations and generates rollback plans with dry-run testing",
+      "triggers": ["migration", "database", "schema", "rollback", "drizzle", "prisma"],
+      "category": "data",
+      "status": "LOADED"
+    },
+    {
+      "id": "playwright-browser-agent",
+      "name": "playwright-browser-agent",
+      "description": "Advanced browser automation for complex forms, dynamic DOM, and data extraction",
+      "triggers": ["playwright", "browser-automation", "scrape", "forms", "extract"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "api-spec-to-sdk",
+      "name": "api-spec-to-sdk",
+      "description": "Generates typed Client SDKs from OpenAPI/Swagger specs with unit tests",
+      "triggers": ["openapi", "swagger", "sdk", "codegen", "api-client"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "vector-index-optimizer",
+      "name": "vector-index-optimizer",
+      "description": "Optimizes ChromaDB vector embeddings by removing duplicates and stale contexts",
+      "triggers": ["vector", "embeddings", "chromadb", "optimize", "context-drift"],
+      "category": "cognitive",
+      "status": "LOADED"
+    },
+    {
+      "id": "synthetic-data-generator",
+      "name": "synthetic-data-generator",
+      "description": "Generates realistic synthetic datasets for testing and evaluation",
+      "triggers": ["synthetic", "mock-data", "test-data", "generate", "dataset"],
+      "category": "data",
       "status": "LOADED"
     }
   ]
