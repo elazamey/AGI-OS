@@ -2,8 +2,8 @@
 const nextConfig = {
   output: 'export',
   images: { unoptimized: true },
-  basePath: process.env.NODE_ENV === 'production' ? '/AGI-OS' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/AGI-OS/' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/agi-system' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/agi-system/' : '',
   reactStrictMode: true,
 };
 

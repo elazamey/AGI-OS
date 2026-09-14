@@ -11,9 +11,9 @@
 <p align="center">The open-source alternative to Manus, Claude, and OpenAI Assistants — self-healing, policy-governed, zero-cost.</p>
 
 <p align="center">
-  <a href="https://elazamey.github.io/AGI-OS/">Live UI</a> •
-  <a href="https://elazamey.github.io/AGI-OS/leaderboard">Leaderboard</a> •
-  <a href="https://elazamey.github.io/AGI-OS/docs">API Docs</a> •
+  <a href="https://elazamey.github.io/agi-system/">Live UI</a> •
+  <a href="https://elazamey.github.io/agi-system/leaderboard">Leaderboard</a> •
+  <a href="https://elazamey.github.io/agi-system/docs">API Docs</a> •
   <a href="https://github.com/elazamey/agi-system">GitHub</a>
 </p>
 
@@ -167,9 +167,9 @@ AI Proposes → Deterministic System Decides → Evidence Proves → Gate Author
 
 ## Live Demo
 
-- **UI**: https://elazamey.github.io/AGI-OS/
-- **Leaderboard**: https://elazamey.github.io/AGI-OS/leaderboard
-- **API Docs**: https://elazamey.github.io/AGI-OS/docs
+- **UI**: https://elazamey.github.io/agi-system/
+- **Leaderboard**: https://elazamey.github.io/agi-system/leaderboard
+- **API Docs**: https://elazamey.github.io/agi-system/docs
 - **Backend**: https://elazamey-agi-system.hf.space/health
 
 ## Contributing

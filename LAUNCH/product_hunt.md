@@ -55,6 +55,6 @@ Scored 98/100 against Claude (53) and OpenAI (54)
 ✅ Zero-Cost ($0.002 total)
 ✅ 85 packages, 775+ tests
 
-Try it: https://elazamey.github.io/AGI-OS/
+Try it: https://elazamey.github.io/agi-system/
 
 #AI #OpenSource #AgentOS #LLM

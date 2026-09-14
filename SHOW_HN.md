@@ -1,8 +1,8 @@
 # Show HN: AGI-OS — Open-Source Cognitive Agent OS (Scored 98/100 vs Claude 53, OpenAI 54)
 
 **URL**: https://github.com/elazamey/agi-system
-**Live Demo**: https://elazamey.github.io/AGI-OS/
-**Leaderboard**: https://elazamey.github.io/AGI-OS/leaderboard
+**Live Demo**: https://elazamey.github.io/agi-system/
+**Leaderboard**: https://elazamey.github.io/agi-system/leaderboard
 
 ---
 
@@ -81,7 +81,7 @@ result = client.agent.execute(prompt="Analyze my codebase")
 ---
 
 **GitHub**: https://github.com/elazamey/agi-system
-**Live UI**: https://elazamey.github.io/AGI-OS/
-**API Docs**: https://elazamey.github.io/AGI-OS/docs
+**Live UI**: https://elazamey.github.io/agi-system/
+**API Docs**: https://elazamey.github.io/agi-system/docs
 
 I'd love feedback from the community. What would make this useful for your projects?
