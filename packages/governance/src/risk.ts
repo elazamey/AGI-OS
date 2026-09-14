@@ -140,11 +140,12 @@ export class RiskEvaluator {
     if (typeof target !== 'string' || target.length === 0) return null;
     if (!isAbsolute(target)) return null;
 
-    const lower = target.toLowerCase();
+    const lower = target.replace(/\\/g, '/').toLowerCase();
     if (SCRATCH_ROOTS.some((root) => lower.startsWith(root))) return null;
 
-    const resolved = resolve(target);
-    if (this.workspaceRoots.some((root) => resolved === root || resolved.startsWith(root.endsWith('/') ? root : root + '/'))) {
+    const resolved = resolve(target).replace(/\\/g, '/');
+    const roots = this.workspaceRoots.map((r) => r.replace(/\\/g, '/'));
+    if (roots.some((root) => resolved === root || resolved.startsWith(root.endsWith('/') ? root : root + '/'))) {
       return null;
     }
 
