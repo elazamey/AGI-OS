@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --agi-bg: #0a0a0f;
+  --agi-surface: #12121a;
+  --agi-card: #1a1a25;
+  --agi-border: #2a2a3a;
+  --agi-cyan: #00d4ff;
+  --agi-green: #10b981;
+  --agi-orange: #f59e0b;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--agi-bg);
+  color: #e2e8f0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Glassmorphic card */
+.glass {
+  background: rgba(26, 26, 37, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(42, 42, 58, 0.5);
+  border-radius: 12px;
+}
+
+.glass-strong {
+  background: rgba(26, 26, 37, 0.85);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(42, 42, 58, 0.7);
+  border-radius: 16px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a4a; }
+
+/* Status chips */
+.chip {
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+.chip-cyan { @apply bg-cyan-500/10 text-cyan-400 border border-cyan-500/20; }
+.chip-green { @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20; }
+.chip-orange { @apply bg-amber-500/10 text-amber-400 border border-amber-500/20; }
+.chip-purple { @apply bg-purple-500/10 text-purple-400 border border-purple-500/20; }
+.chip-red { @apply bg-red-500/10 text-red-400 border border-red-500/20; }
+
+/* Streaming cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.streaming-cursor::after {
+  content: '▊';
+  animation: blink 1s step-end infinite;
+  color: var(--agi-cyan);
+  margin-left: 2px;
+}
+
+/* Glow effects */
+.glow-cyan { box-shadow: 0 0 15px rgba(0, 212, 255, 0.15); }
+.glow-green { box-shadow: 0 0 15px rgba(16, 185, 129, 0.15); }
+.glow-orange { box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); }
+
+/* Message bubbles */
+.msg-user {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+.msg-assistant {
+  background: rgba(26, 26, 37, 0.6);
+  border: 1px solid rgba(42, 42, 58, 0.5);
+}
