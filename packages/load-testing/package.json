@@ -1,0 +1,23 @@
+{
+  "name": "@agi-os/load-testing",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:load": "tsx tests/load.test.ts",
+    "test:stress": "tsx tests/stress.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agi-os/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0",
+    "vitest": "^1.2.0"
+  }
+}
