@@ -1,102 +1,114 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { DeploymentManager } from '../src/index.js';
+import { describe, it, expect } from 'vitest';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
 
-describe('DeploymentManager', () => {
-  let manager: DeploymentManager;
+const DEPLOY_DIR = join(__dirname, '..');
 
-  beforeEach(() => {
-    manager = new DeploymentManager({
-      environment: 'production',
-      replicas: 2,
-      enableOllama: true,
-    });
+describe('@agi-os/deploy — Package Structure', () => {
+  it('should have package.json', () => {
+    expect(existsSync(join(DEPLOY_DIR, 'package.json'))).toBe(true);
   });
 
-  it('should create with config', () => {
-    expect(manager).toBeDefined();
+  it('should have docker-compose.yml', () => {
+    expect(existsSync(join(DEPLOY_DIR, 'docker-compose.yml'))).toBe(true);
   });
 
-  it('should deploy successfully', async () => {
-    const result = await manager.deploy();
-    expect(result.status).toBe('success');
-    expect(result.components.length).toBeGreaterThan(0);
-    expect(result.timestamp).toBeDefined();
+  it('should have terraform config', () => {
+    expect(existsSync(join(DEPLOY_DIR, 'terraform', 'main.tf'))).toBe(true);
+    expect(existsSync(join(DEPLOY_DIR, 'terraform', 'variables.tf'))).toBe(true);
+    expect(existsSync(join(DEPLOY_DIR, 'terraform', 'outputs.tf'))).toBe(true);
   });
 
-  it('should include AGI-OS API component', async () => {
-    const result = await manager.deploy();
-    const apiComponent = result.components.find(c => c.name === 'agi-os-api');
-    expect(apiComponent).toBeDefined();
-    expect(apiComponent?.status).toBe('running');
+  it('should have helm chart', () => {
+    expect(existsSync(join(DEPLOY_DIR, 'helm', 'Chart.yaml'))).toBe(true);
+    expect(existsSync(join(DEPLOY_DIR, 'helm', 'values.yaml'))).toBe(true);
+    expect(existsSync(join(DEPLOY_DIR, 'helm', 'templates', 'deployment.yaml'))).toBe(true);
+    expect(existsSync(join(DEPLOY_DIR, 'helm', 'templates', 'service.yaml'))).toBe(true);
+    expect(existsSync(join(DEPLOY_DIR, 'helm', 'templates', 'ingress.yaml'))).toBe(true);
   });
 
-  it('should include Ollama when enabled', async () => {
-    const result = await manager.deploy();
-    const ollamaComponent = result.components.find(c => c.name === 'ollama');
-    expect(ollamaComponent).toBeDefined();
-    expect(ollamaComponent?.status).toBe('running');
-  });
-
-  it('should not include PostgreSQL when disabled', async () => {
-    const result = await manager.deploy();
-    const postgresComponent = result.components.find(c => c.name === 'postgres');
-    expect(postgresComponent).toBeUndefined();
-  });
-
-  it('should get status', async () => {
-    const result = await manager.getStatus();
-    expect(result.status).toBe('success');
-    expect(result.components).toHaveLength(2);
-  });
-
-  it('should scale replicas', async () => {
-    await manager.scale(5);
-    const manifest = manager.getKubernetesManifest();
-    expect(manifest).toContain('replicas: 5');
-  });
-
-  it('should generate Docker Compose config', () => {
-    const config = manager.getDockerComposeConfig();
-    expect(config).toContain('agi-os:latest');
-    expect(config).toContain('ollama/ollama:latest');
-    expect(config).toContain('3000:3000');
-    expect(config).toContain('11434:11434');
-  });
-
-  it('should generate Kubernetes manifest', () => {
-    const manifest = manager.getKubernetesManifest();
-    expect(manifest).toContain('apiVersion: apps/v1');
-    expect(manifest).toContain('kind: Deployment');
-    expect(manifest).toContain('agi-os-api');
+  it('should have CLI entry point', () => {
+    expect(existsSync(join(DEPLOY_DIR, 'src', 'cli.ts'))).toBe(true);
   });
 });
 
-describe('DeploymentManager with different configs', () => {
-  it('should create development environment', async () => {
-    const manager = new DeploymentManager({
-      environment: 'development',
-      replicas: 1,
-      enableOllama: true,
-      enablePostgres: true,
-      enableRedis: true,
-    });
+describe('@agi-os/deploy — Docker Compose', () => {
+  const compose = readFileSync(join(DEPLOY_DIR, 'docker-compose.yml'), 'utf-8');
 
-    const result = await manager.deploy();
-    expect(result.status).toBe('success');
-    expect(result.components.length).toBe(4);
+  it('should define api-gateway service', () => {
+    expect(compose).toContain('api-gateway:');
   });
 
-  it('should create minimal environment', async () => {
-    const manager = new DeploymentManager({
-      environment: 'development',
-      replicas: 1,
-      enableOllama: false,
-      enablePostgres: false,
-      enableRedis: false,
-    });
+  it('should expose port 7860', () => {
+    expect(compose).toContain('7860:7860');
+  });
 
-    const result = await manager.deploy();
-    expect(result.status).toBe('success');
-    expect(result.components.length).toBe(1);
+  it('should include healthcheck', () => {
+    expect(compose).toContain('healthcheck:');
+  });
+
+  it('should include redis service', () => {
+    expect(compose).toContain('redis:');
+  });
+
+  it('should include nginx reverse proxy', () => {
+    expect(compose).toContain('nginx:');
+  });
+
+  it('should define network', () => {
+    expect(compose).toContain('agios-network');
+  });
+});
+
+describe('@agi-os/deploy — Terraform', () => {
+  const mainTf = readFileSync(join(DEPLOY_DIR, 'terraform', 'main.tf'), 'utf-8');
+
+  it('should define AWS provider', () => {
+    expect(mainTf).toContain('provider "aws"');
+  });
+
+  it('should define VPC', () => {
+    expect(mainTf).toContain('resource "aws_vpc"');
+  });
+
+  it('should define ECS cluster', () => {
+    expect(mainTf).toContain('resource "aws_ecs_cluster"');
+  });
+
+  it('should define Fargate task', () => {
+    expect(mainTf).toContain('requires_compatibilities = ["FARGATE"]');
+  });
+
+  it('should define ALB', () => {
+    expect(mainTf).toContain('resource "aws_lb"');
+  });
+
+  it('should expose port 7860', () => {
+    expect(mainTf).toContain('containerPort = 7860');
+  });
+});
+
+describe('@agi-os/deploy — Helm Chart', () => {
+  const chart = readFileSync(join(DEPLOY_DIR, 'helm', 'Chart.yaml'), 'utf-8');
+  const values = readFileSync(join(DEPLOY_DIR, 'helm', 'values.yaml'), 'utf-8');
+
+  it('should have chart name agios', () => {
+    expect(chart).toContain('name: agios');
+  });
+
+  it('should have appVersion', () => {
+    expect(chart).toContain('appVersion:');
+  });
+
+  it('should define replica count', () => {
+    expect(values).toContain('replicaCount:');
+  });
+
+  it('should define resource limits', () => {
+    expect(values).toContain('resources:');
+  });
+
+  it('should enable autoscaling', () => {
+    expect(values).toContain('autoscaling:');
   });
 });
