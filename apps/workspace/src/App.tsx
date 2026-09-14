@@ -68,6 +68,11 @@ export default function App() {
       text,
       [...messages, userMsg],
       {
+        currentSystemLevel: systemLevel,
+        activeFileContent: selectedFile?.content,
+        dagNodes,
+      },
+      {
         onToken: (chunk) => setStreamingContent((prev) => prev + chunk),
         onThought: (thoughtChunk) => setStreamingThought((prev) => prev + thoughtChunk),
         onSystemLevel: (level) => setSystemLevel(level),
