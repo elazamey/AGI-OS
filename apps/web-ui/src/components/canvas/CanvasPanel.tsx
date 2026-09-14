@@ -2,12 +2,13 @@
 import { useAgiStore } from '@/lib/store';
 import { useState, useEffect } from 'react';
 import { Activity, Shield, Cpu, Database, Zap, Clock, CheckCircle2, AlertCircle, Loader2, Wrench, Eye } from 'lucide-react';
+import { IntegrationsPanel } from './IntegrationsPanel';
 
 export function CanvasPanel() {
   const { missions, totalTokens, totalCostUsd, governanceStatus, activeTools } = useAgiStore();
   const [health, setHealth] = useState<Record<string, unknown> | null>(null);
   const [models, setModels] = useState<Array<{ id: string; owned_by: string }>>([]);
-  const [activeTab, setActiveTab] = useState<'missions' | 'tools' | 'system'>('missions');
+  const [activeTab, setActiveTab] = useState<'missions' | 'tools' | 'system' | 'integrations'>('missions');
 
   useEffect(() => {
     const fetchHealth = async () => {
@@ -44,7 +45,7 @@ export function CanvasPanel() {
         <Activity size={18} className="text-agi-green" />
         <span className="font-semibold text-sm">Canvas</span>
         <div className="ml-auto flex gap-1">
-          {['missions', 'tools', 'system'].map((tab) => (
+          {['missions', 'tools', 'integrations', 'system'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -125,6 +126,9 @@ export function CanvasPanel() {
             )}
           </div>
         )}
+
+        {/* Integrations Tab */}
+        {activeTab === 'integrations' && <IntegrationsPanel />}
 
         {/* System Tab */}
         {activeTab === 'system' && (

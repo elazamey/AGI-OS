@@ -18,6 +18,12 @@ export interface MissionUpdate {
   timestamp: number;
 }
 
+export interface ConnectedAccountState {
+  id: string;
+  status: 'disconnected' | 'connecting' | 'connected' | 'error';
+  connectedAt?: number;
+}
+
 interface AgiStore {
   messages: ChatMessage[];
   isStreaming: boolean;
@@ -27,6 +33,7 @@ interface AgiStore {
   totalCostUsd: number;
   governanceStatus: string;
   activeTools: string[];
+  connectedAccounts: ConnectedAccountState[];
   addMessage: (msg: ChatMessage) => void;
   setStreaming: (v: boolean) => void;
   setStreamingContent: (c: string) => void;
@@ -35,6 +42,7 @@ interface AgiStore {
   updateUsage: (tokens: number) => void;
   setGovernanceStatus: (s: string) => void;
   setActiveTools: (t: string[]) => void;
+  updateAccountStatus: (id: string, status: ConnectedAccountState['status']) => void;
   clearMessages: () => void;
 }
 
@@ -47,6 +55,7 @@ export const useAgiStore = create<AgiStore>((set) => ({
   totalCostUsd: 0,
   governanceStatus: 'idle',
   activeTools: [],
+  connectedAccounts: [],
 
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setStreaming: (v) => set({ isStreaming: v }),
@@ -56,5 +65,13 @@ export const useAgiStore = create<AgiStore>((set) => ({
   updateUsage: (tokens) => set((s) => ({ totalTokens: s.totalTokens + tokens, totalCostUsd: s.totalCostUsd + tokens * 0.000001 })),
   setGovernanceStatus: (g) => set({ governanceStatus: g }),
   setActiveTools: (t) => set({ activeTools: t }),
+  updateAccountStatus: (id, status) =>
+    set((s) => {
+      const existing = s.connectedAccounts.find((a) => a.id === id);
+      if (existing) {
+        return { connectedAccounts: s.connectedAccounts.map((a) => a.id === id ? { ...a, status, connectedAt: status === 'connected' ? Date.now() : undefined } : a) };
+      }
+      return { connectedAccounts: [...s.connectedAccounts, { id, status, connectedAt: status === 'connected' ? Date.now() : undefined }] };
+    }),
   clearMessages: () => set({ messages: [], missions: [], totalTokens: 0 }),
 }));
