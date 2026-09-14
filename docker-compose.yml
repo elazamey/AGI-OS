@@ -1,115 +1,112 @@
-version: '3.9'
+version: '3.8'
 
 services:
-  # =========================================================================
-  # Ollama — Local LLM Inference Server ($0 cost)
-  # =========================================================================
-  ollama:
-    image: ollama/ollama:latest
-    container_name: agi-ollama
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-models:/root/.ollama
-    environment:
-      - OLLAMA_HOST=0.0.0.0:11434
-      - OLLAMA_NUM_PARALLEL=2
-      - OLLAMA_MAX_LOADED_MODELS=2
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-        reservations:
-          memory: 2G
-
-  # =========================================================================
-  # AGI OS — Core Runtime (tests + cognitive loop)
-  # =========================================================================
-  agi-os:
+  # AGI-OS API Server
+  api-server:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runtime
-    container_name: agi-os-runtime
-    restart: unless-stopped
-    depends_on:
-      ollama:
-        condition: service_healthy
-    environment:
-      - NODE_ENV=production
-      - MAX_SPEND=0
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama3.2:latest
-      - LOG_LEVEL=info
-    volumes:
-      - agi-data:/app/data
-      - agi-logs:/app/logs
-    healthcheck:
-      test: ["CMD", "node", "-e", "process.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-
-  # =========================================================================
-  # Dashboard — Next.js Web UI
-  # =========================================================================
-  dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dashboard
-    container_name: agi-dashboard
-    restart: unless-stopped
-    depends_on:
-      agi-os:
-        condition: service_healthy
+    container_name: agi-os-api
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MAX_SPEND=0
+      - GROQ_API_KEY_1=${GROQ_API_KEY_1}
+      - GROQ_API_KEY_2=${GROQ_API_KEY_2}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - OLLAMA_BASE_URL=http://ollama:11434
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-
-  # =========================================================================
-  # AGI OS — Test Runner (run once)
-  # =========================================================================
-  agi-os-test:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime
-    container_name: agi-os-test
-    profiles:
-      - test
-    depends_on:
-      ollama:
-        condition: service_healthy
-    environment:
-      - NODE_ENV=test
-      - MAX_SPEND=0
-      - OLLAMA_BASE_URL=http://ollama:11434
-    command: ["pnpm", "test"]
+      - GITHUB_SKILLS_OWNER=${GITHUB_SKILLS_OWNER:-elazamey}
+      - GITHUB_SKILLS_REPO=${GITHUB_SKILLS_REPO:-skills-registry}
+      - GITHUB_SKILLS_BRANCH=${GITHUB_SKILLS_BRANCH:-main}
+      - MAX_SELF_HEALING_RETRIES=3
+      - SANDBOX_TIMEOUT_SECONDS=30
+      - ALLOWED_EXECUTABLES=python,python3,pytest,npm,npx,node
     volumes:
-      - ./reports:/app/reports
+      - ./skills-registry:/app/skills-registry
+      - agi-os-data:/app/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - agi-os-network
+
+  # Ollama Local LLM
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agi-os-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - agi-os-network
+
+  # PostgreSQL for persistent storage
+  postgres:
+    image: postgres:16-alpine
+    container_name: agi-os-postgres
+    environment:
+      - POSTGRES_DB=agi_os
+      - POSTGRES_USER=agi_os
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-agi_os_password}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - agi-os-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: agi-os-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - agi-os-network
+
+  # Prometheus for monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agi-os-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    networks:
+      - agi-os-network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agi-os-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - agi-os-network
 
 volumes:
-  ollama-models:
-    driver: local
-  agi-data:
-    driver: local
-  agi-logs:
-    driver: local
+  agi-os-data:
+  ollama-data:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  agi-os-network:
+    driver: bridge
