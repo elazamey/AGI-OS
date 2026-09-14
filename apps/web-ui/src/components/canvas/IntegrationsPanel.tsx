@@ -82,7 +82,7 @@ export function IntegrationsPanel() {
   );
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://elazamey-agi-system.hf.space';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space';
     const checkStatus = async () => {
       try {
         const res = await fetch(`${backendUrl}/api/integrations/status`);
@@ -108,7 +108,7 @@ export function IntegrationsPanel() {
   const handleConnect = useCallback((providerId: string) => {
     setAccounts((prev) => prev.map((a) => a.id === providerId ? { ...a, status: 'connecting' } : a));
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://elazamey-agi-system.hf.space';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space';
     const popup = window.open(
       `${backendUrl}/api/auth/${providerId}`,
       `oauth_${providerId}`,

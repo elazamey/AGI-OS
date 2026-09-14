@@ -38,7 +38,7 @@ export default function App() {
   const [streamingThought, setStreamingThought] = useState('');
 
   const [gatewayConfig, setGatewayConfig] = useState({
-    gatewayUrl: 'https://elazamey-agi-system.hf.space',
+    gatewayUrl: 'https://sayed101-agi-system.hf.space',
     apiKey: '',
     model: 'agi-os-cortex',
     autonomousMode: true,

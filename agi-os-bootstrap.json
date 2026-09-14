@@ -8,7 +8,7 @@
   },
   "gateways": {
     "frontend": "https://elazamey.github.io/AGI-OS",
-    "backend": "https://elazamey-agi-system.hf.space",
+    "backend": "https://sayed101-agi-system.hf.space",
     "protocol": "OpenAI-Compatible (/v1/chat/completions)",
     "fallback_providers": [
       "Groq",
