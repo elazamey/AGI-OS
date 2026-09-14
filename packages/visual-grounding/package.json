@@ -1,0 +1,18 @@
+{
+  "name": "@agi-os/visual-grounding",
+  "version": "1.0.0",
+  "description": "Multimodal Visual Grounding for browser UI analysis and interaction",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

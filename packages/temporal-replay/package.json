@@ -1,0 +1,18 @@
+{
+  "name": "@agi-os/temporal-replay",
+  "version": "1.0.0",
+  "description": "Temporal Replay Engine for step-by-step execution replay and forensics",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}
