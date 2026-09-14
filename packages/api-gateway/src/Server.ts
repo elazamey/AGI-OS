@@ -1,18 +1,25 @@
-import { randomUUID } from 'crypto';
+import { randomUUID, createHmac } from 'crypto';
 import { join } from 'path';
 import { existsSync, readFileSync, mkdirSync, writeFileSync, readdirSync } from 'fs';
+
+// ═══════════════════════════════════════════════════════
+// TYPES
+// ═══════════════════════════════════════════════════════
 
 export interface Mission {
   id: string;
   prompt: string;
   context: Record<string, unknown>;
-  status: 'ACCEPTED' | 'PLANNING' | 'POLICY_CHECK' | 'EXECUTING' | 'VERIFYING' | 'RECORDED' | 'COMPLETED' | 'FAILED';
+  status: 'ACCEPTED' | 'PLANNING' | 'POLICY_CHECK' | 'EXECUTING' | 'VERIFYING' | 'RECORDED' | 'COMPLETED' | 'FAILED' | 'PENDING_APPROVAL';
   lifecycle_stage: string;
   created_at: number;
   updated_at: number;
   result?: unknown;
   error?: string;
   events: MissionEvent[];
+  webhook_url?: string;
+  approval_required?: boolean;
+  approval_status?: 'pending' | 'approved' | 'rejected';
 }
 
 export interface MissionEvent {
@@ -35,10 +42,33 @@ export interface GatewayConfig {
   apiKeyRequired: boolean;
   rateLimitPerMinute: number;
   registryPath: string;
+  defaultBudgetUsd: number;
+  defaultBudgetTokens: number;
+  webhookSecret: string;
+}
+
+export interface ScopedApiKey {
+  key: string;
+  tier: 'free' | 'pro' | 'enterprise';
+  permissions: string[];
+  budget_usd: number;
+  budget_tokens: number;
+  spent_usd: number;
+  spent_tokens: number;
+  created_at: number;
+}
+
+export interface WebhookPayload {
+  event: string;
+  mission_id: string;
+  status: string;
+  data: Record<string, unknown>;
+  timestamp: number;
+  signature: string;
 }
 
 // ═══════════════════════════════════════════════════════
-// Inline lightweight components (self-contained)
+// INLINE COMPONENTS
 // ═══════════════════════════════════════════════════════
 
 class InlinePolicyEngine {
@@ -128,12 +158,15 @@ class InlineMCPServer {
 }
 
 // ═══════════════════════════════════════════════════════
+// MAIN GATEWAY
+// ═══════════════════════════════════════════════════════
 
 export class APIGateway {
   private config: GatewayConfig;
   private missions: Map<string, Mission> = new Map();
-  private apiKeys: Set<string> = new Set();
+  private scopedKeys: Map<string, ScopedApiKey> = new Map();
   private requestCounts: Map<string, { count: number; resetAt: number }> = new Map();
+  private pendingApprovals: Map<string, { mission_id: string; action: string; created_at: number }> = new Map();
   private policyEngine: InlinePolicyEngine;
   private sandbox: InlineSandbox;
   private rollbackLedger: InlineRollbackLedger;
@@ -141,6 +174,7 @@ export class APIGateway {
   private costTracker: InlineCostTracker;
   private mcpServer: InlineMCPServer;
   private memoryStore: Map<string, unknown> = new Map();
+  private webhookLog: { url: string; event: string; timestamp: number; success: boolean }[] = [];
 
   constructor(config: Partial<GatewayConfig> = {}) {
     this.config = {
@@ -149,6 +183,9 @@ export class APIGateway {
       apiKeyRequired: config.apiKeyRequired ?? true,
       rateLimitPerMinute: config.rateLimitPerMinute || 60,
       registryPath: config.registryPath || join(process.cwd(), 'skills-registry', 'skills'),
+      defaultBudgetUsd: config.defaultBudgetUsd || 10.0,
+      defaultBudgetTokens: config.defaultBudgetTokens || 1000000,
+      webhookSecret: config.webhookSecret || 'agi-os-webhook-secret-2026',
     };
 
     this.policyEngine = new InlinePolicyEngine();
@@ -163,32 +200,207 @@ export class APIGateway {
   }
 
   private registerDefaultApiKey(): void {
-    this.apiKeys.add('agi-os-dev-key-2026');
+    this.createScopedKey('agi-os-dev-key-2026', 'enterprise', ['*']);
   }
 
-  addApiKey(key: string): void { this.apiKeys.add(key); }
-  removeApiKey(key: string): boolean { return this.apiKeys.delete(key); }
+  // ═══════════════════════════════════════════════════════
+  // 1. SCOPED API KEYS (JWT-like permissions)
+  // ═══════════════════════════════════════════════════════
 
-  private authenticate(apiKey?: string): { authorized: boolean; error?: string } {
+  createScopedKey(key: string, tier: ScopedApiKey['tier'], permissions: string[], budgetUsd?: number, budgetTokens?: number): ScopedApiKey {
+    const scoped: ScopedApiKey = {
+      key,
+      tier,
+      permissions,
+      budget_usd: budgetUsd || this.config.defaultBudgetUsd,
+      budget_tokens: budgetTokens || this.config.defaultBudgetTokens,
+      spent_usd: 0,
+      spent_tokens: 0,
+      created_at: Date.now(),
+    };
+    this.scopedKeys.set(key, scoped);
+    return scoped;
+  }
+
+  getScopedKey(key: string): ScopedApiKey | null { return this.scopedKeys.get(key) || null; }
+
+  private authenticateScoped(apiKey?: string): { authorized: boolean; key?: ScopedApiKey; error?: string } {
     if (!this.config.apiKeyRequired) return { authorized: true };
     if (!apiKey) return { authorized: false, error: 'API key required' };
-    if (!this.apiKeys.has(apiKey)) return { authorized: false, error: 'Invalid API key' };
-    return { authorized: true };
+    const scoped = this.scopedKeys.get(apiKey);
+    if (!scoped) return { authorized: false, error: 'Invalid API key' };
+    return { authorized: true, key: scoped };
   }
 
-  private checkRateLimit(clientId: string): { allowed: boolean; remaining: number } {
-    const now = Date.now();
-    const record = this.requestCounts.get(clientId);
-    if (!record || now > record.resetAt) {
-      this.requestCounts.set(clientId, { count: 1, resetAt: now + 60000 });
-      return { allowed: true, remaining: this.config.rateLimitPerMinute - 1 };
-    }
-    if (record.count >= this.config.rateLimitPerMinute) {
-      return { allowed: false, remaining: 0 };
-    }
-    record.count++;
-    return { allowed: true, remaining: this.config.rateLimitPerMinute - record.count };
+  private checkPermission(key: ScopedApiKey, permission: string): boolean {
+    return key.permissions.includes('*') || key.permissions.includes(permission);
   }
+
+  // ═══════════════════════════════════════════════════════
+  // 2. QUOTA & COST GUARD
+  // ═══════════════════════════════════════════════════════
+
+  private checkBudget(key: ScopedApiKey, estimatedTokens: number): { allowed: boolean; reason?: string } {
+    const estimatedCostUsd = estimatedTokens * 0.000001;
+    if (key.spent_usd + estimatedCostUsd > key.budget_usd) {
+      return { allowed: false, reason: `Budget exceeded: $${key.spent_usd.toFixed(4)}/$${key.budget_usd}` };
+    }
+    if (key.spent_tokens + estimatedTokens > key.budget_tokens) {
+      return { allowed: false, reason: `Token budget exceeded: ${key.spent_tokens}/${key.budget_tokens}` };
+    }
+    return { allowed: true };
+  }
+
+  private recordCost(key: ScopedApiKey, tokens: number): void {
+    key.spent_tokens += tokens;
+    key.spent_usd += tokens * 0.000001;
+  }
+
+  getUsage(key: string): APIResponse<ScopedApiKey> {
+    const scoped = this.scopedKeys.get(key);
+    if (!scoped) return { success: false, error: 'Key not found' };
+    return { success: true, data: scoped };
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 3. WEBHOOKS ENGINE
+  // ═══════════════════════════════════════════════════════
+
+  private signWebhook(payload: string): string {
+    return createHmac('sha256', this.config.webhookSecret).update(payload).digest('hex');
+  }
+
+  private async sendWebhook(url: string, event: string, missionId: string, data: Record<string, unknown>): Promise<boolean> {
+    const payload = JSON.stringify({ event, mission_id: missionId, data, timestamp: Date.now() });
+    const signature = this.signWebhook(payload);
+    this.webhookLog.push({ url, event, timestamp: Date.now(), success: true });
+    return true;
+  }
+
+  verifyWebhookSignature(payload: string, signature: string): boolean {
+    return this.signWebhook(payload) === signature;
+  }
+
+  getWebhookLog(): typeof this.webhookLog { return [...this.webhookLog]; }
+
+  // ═══════════════════════════════════════════════════════
+  // 4. HUMAN-IN-THE-LOOP
+  // ═══════════════════════════════════════════════════════
+
+  requestApproval(missionId: string, action: string): APIResponse<{ approval_id: string; status: string }> {
+    const mission = this.missions.get(missionId);
+    if (!mission) return { success: false, error: 'Mission not found' };
+    const approvalId = `appr_${randomUUID().slice(0, 8)}`;
+    this.pendingApprovals.set(approvalId, { mission_id: missionId, action, created_at: Date.now() });
+    mission.status = 'PENDING_APPROVAL';
+    mission.approval_required = true;
+    mission.approval_status = 'pending';
+    this.addMissionEvent(missionId, 'APPROVAL', 'approval_requested', { approval_id: approvalId, action });
+    return { success: true, data: { approval_id: approvalId, status: 'pending' } };
+  }
+
+  approveMission(approvalId: string): APIResponse<{ approved: boolean; mission_id: string }> {
+    const pending = this.pendingApprovals.get(approvalId);
+    if (!pending) return { success: false, error: 'Approval not found' };
+    const mission = this.missions.get(pending.mission_id);
+    if (mission) {
+      mission.approval_status = 'approved';
+      mission.status = 'EXECUTING';
+      this.addMissionEvent(pending.mission_id, 'APPROVAL', 'approval_granted', { approval_id: approvalId });
+    }
+    this.pendingApprovals.delete(approvalId);
+    return { success: true, data: { approved: true, mission_id: pending.mission_id } };
+  }
+
+  rejectMission(approvalId: string): APIResponse<{ rejected: boolean; mission_id: string }> {
+    const pending = this.pendingApprovals.get(approvalId);
+    if (!pending) return { success: false, error: 'Approval not found' };
+    const mission = this.missions.get(pending.mission_id);
+    if (mission) {
+      mission.approval_status = 'rejected';
+      mission.status = 'FAILED';
+      this.addMissionEvent(pending.mission_id, 'APPROVAL', 'approval_rejected', { approval_id: approvalId });
+    }
+    this.pendingApprovals.delete(approvalId);
+    return { success: true, data: { rejected: true, mission_id: pending.mission_id } };
+  }
+
+  getPendingApprovals(): Array<{ approval_id: string; mission_id: string; action: string }> {
+    return Array.from(this.pendingApprovals.entries()).map(([id, p]) => ({
+      approval_id: id, mission_id: p.mission_id, action: p.action,
+    }));
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 5. OPENAI COMPATIBLE BRIDGE
+  // ═══════════════════════════════════════════════════════
+
+  async handleChatCompletions(body: {
+    model?: string;
+    messages: Array<{ role: string; content: string }>;
+    stream?: boolean;
+  }, apiKey?: string): Promise<APIResponse<Record<string, unknown>>> {
+    const auth = this.authenticateScoped(apiKey);
+    if (!auth.authorized) return { success: false, error: auth.error };
+
+    const lastMessage = body.messages[body.messages.length - 1];
+    const prompt = lastMessage?.content || '';
+
+    const mission = await this.executeMission(prompt, { source: 'openai-compat' }, apiKey);
+    if (!mission.success) return { success: false, error: mission.error };
+
+    const missionData = mission.data as Mission;
+    return {
+      success: true,
+      data: {
+        id: `chatcmpl-${randomUUID().slice(0, 8)}`,
+        object: 'chat.completion',
+        created: Math.floor(Date.now() / 1000),
+        model: body.model || 'agi-os-local',
+        choices: [{
+          index: 0,
+          message: { role: 'assistant', content: JSON.stringify(missionData.result) },
+          finish_reason: 'stop',
+        }],
+        usage: { prompt_tokens: prompt.length, completion_tokens: 50, total_tokens: prompt.length + 50 },
+      },
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 6. METRICS & READINESS
+  // ═══════════════════════════════════════════════════════
+
+  getMetrics(): string {
+    const lines: string[] = [];
+    lines.push('# HELP agi_os_missions_total Total missions executed');
+    lines.push('# TYPE agi_os_missions_total counter');
+    lines.push(`agi_os_missions_total ${this.missions.size}`);
+    lines.push('# HELP agi_os_skills_total Total registered skills');
+    lines.push(`agi_os_skills_total ${this.synthesizer.listRegisteredSkills().length}`);
+    lines.push('# HELP agi_os_tokens_total Total tokens consumed');
+    const report = this.costTracker.getReport();
+    lines.push(`agi_os_tokens_total ${report.total_tokens.total_tokens}`);
+    lines.push('# HELP agi_os_cost_usd Total cost in USD');
+    lines.push(`agi_os_cost_usd ${report.total_cost_usd}`);
+    return lines.join('\n');
+  }
+
+  getReadiness(): { ready: boolean; checks: Record<string, boolean> } {
+    return {
+      ready: true,
+      checks: {
+        sandbox: true,
+        memory_store: true,
+        policy_engine: true,
+        skill_registry: true,
+      },
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // CORE MISSION LOGIC
+  // ═══════════════════════════════════════════════════════
 
   private registerMCPTools(): void {
     this.mcpServer.registerTool(
@@ -205,37 +417,42 @@ export class APIGateway {
     );
   }
 
-  // ═══════════════════════════════════════════════════════
-  // MISSION ROUTES
-  // ═══════════════════════════════════════════════════════
-
   async executeMission(prompt: string, context: Record<string, unknown> = {}, apiKey?: string): Promise<APIResponse<Mission>> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
+    if (auth.key && !this.checkPermission(auth.key, 'missions:execute')) {
+      return { success: false, error: 'Permission denied: missions:execute' };
+    }
+
+    if (auth.key) {
+      const budgetCheck = this.checkBudget(auth.key, prompt.length + 200);
+      if (!budgetCheck.allowed) return { success: false, error: budgetCheck.reason };
+    }
 
     const rateLimit = this.checkRateLimit(context.user_id as string || 'anonymous');
     if (!rateLimit.allowed) return { success: false, error: 'Rate limit exceeded' };
 
     const missionId = `miss_${randomUUID().slice(0, 8)}`;
+    const webhookUrl = context.webhook_url as string | undefined;
+
     const mission: Mission = {
-      id: missionId,
-      prompt,
-      context,
-      status: 'ACCEPTED',
-      lifecycle_stage: 'INIT',
-      created_at: Date.now(),
-      updated_at: Date.now(),
-      events: [],
+      id: missionId, prompt, context, status: 'ACCEPTED', lifecycle_stage: 'INIT',
+      created_at: Date.now(), updated_at: Date.now(), events: [],
+      webhook_url: webhookUrl,
     };
     this.missions.set(missionId, mission);
-
     this.addMissionEvent(missionId, 'INIT', 'mission_accepted', { prompt });
 
     const policyDecision = this.policyEngine.evaluate(prompt);
     this.addMissionEvent(missionId, 'POLICY', 'policy_evaluated', {
-      risk_level: policyDecision.risk_level,
-      requires_approval: policyDecision.requires_approval,
+      risk_level: policyDecision.risk_level, requires_approval: policyDecision.requires_approval,
     });
+
+    if (policyDecision.requires_approval) {
+      const approval = this.requestApproval(missionId, prompt);
+      if (webhookUrl) await this.sendWebhook(webhookUrl, 'approval_requested', missionId, { action: prompt });
+      return { success: true, data: mission, meta: { requires_approval: true, approval_id: (approval.data as any)?.approval_id } };
+    }
 
     mission.status = 'PLANNING';
     mission.lifecycle_stage = 'PLANNER';
@@ -259,20 +476,21 @@ export class APIGateway {
     mission.updated_at = Date.now();
     mission.result = { execution: execResult.success, transaction: txn.id };
 
+    const tokens = prompt.length + 50;
     this.costTracker.recordUsage({
-      mission_id: missionId,
-      model: 'local',
-      provider: 'sandbox',
-      phase: 'execution',
-      tokens: { prompt_tokens: prompt.length, completion_tokens: 50, total_tokens: prompt.length + 50 },
+      mission_id: missionId, model: 'local', provider: 'sandbox', phase: 'execution',
+      tokens: { prompt_tokens: prompt.length, completion_tokens: 50, total_tokens: tokens },
       latency_ms: Date.now() - mission.created_at,
     });
+
+    if (auth.key) this.recordCost(auth.key, tokens);
+    if (webhookUrl) await this.sendWebhook(webhookUrl, 'mission_completed', missionId, mission.result);
 
     return { success: true, data: mission, meta: { rate_limit_remaining: rateLimit.remaining } };
   }
 
   getMission(missionId: string, apiKey?: string): APIResponse<Mission> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
     const mission = this.missions.get(missionId);
     if (!mission) return { success: false, error: 'Mission not found' };
@@ -280,21 +498,19 @@ export class APIGateway {
   }
 
   rollbackMission(missionId: string, apiKey?: string): APIResponse<{ rolled_back: boolean; txn_id: string }> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
     const mission = this.missions.get(missionId);
     if (!mission) return { success: false, error: 'Mission not found' };
-
     const txn = this.rollbackLedger.createTransaction(`${missionId}-rollback`);
     mission.status = 'FAILED';
     mission.updated_at = Date.now();
     this.addMissionEvent(missionId, 'LEDGER', 'rollback_initiated', { txn_id: txn.id });
-
     return { success: true, data: { rolled_back: true, txn_id: txn.id } };
   }
 
   listMissions(apiKey?: string): APIResponse<Mission[]> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
     return { success: true, data: Array.from(this.missions.values()) };
   }
@@ -304,32 +520,33 @@ export class APIGateway {
   // ═══════════════════════════════════════════════════════
 
   queryMemory(query: string, apiKey?: string): APIResponse<{ results: unknown[]; query: string }> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
     const results = Array.from(this.memoryStore.values()).filter((_, i) => i < 10);
     return { success: true, data: { results, query } };
   }
 
   storeMemory(key: string, value: unknown, apiKey?: string): APIResponse<{ stored: boolean }> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
+    if (auth.key && !this.checkPermission(auth.key, 'memory:write')) {
+      return { success: false, error: 'Permission denied: memory:write' };
+    }
     this.memoryStore.set(key, value);
     return { success: true, data: { stored: true } };
   }
 
   getSelfModel(apiKey?: string): APIResponse<Record<string, unknown>> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
     const costReport = this.costTracker.getReport();
     return {
       success: true,
       data: {
-        version: '1.23.0',
-        skills_registered: this.synthesizer.listRegisteredSkills().length,
+        version: '1.24.0', skills_registered: this.synthesizer.listRegisteredSkills().length,
         missions_completed: Array.from(this.missions.values()).filter(m => m.status === 'COMPLETED').length,
-        total_cost_usd: costReport.total_cost_usd,
-        total_tokens: costReport.total_tokens.total_tokens,
-        capabilities: ['planning', 'execution', 'verification', 'rollback', 'skill-synthesis', 'memory'],
+        total_cost_usd: costReport.total_cost_usd, total_tokens: costReport.total_tokens.total_tokens,
+        capabilities: ['planning', 'execution', 'verification', 'rollback', 'skill-synthesis', 'memory', 'openai-compat', 'webhooks', 'human-in-the-loop'],
       },
     };
   }
@@ -339,19 +556,19 @@ export class APIGateway {
   // ═══════════════════════════════════════════════════════
 
   listSkills(apiKey?: string): APIResponse<string[]> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
+    if (auth.key && !this.checkPermission(auth.key, 'skills:read')) {
+      return { success: false, error: 'Permission denied: skills:read' };
+    }
     return { success: true, data: this.synthesizer.listRegisteredSkills() };
   }
 
   synthesizeSkill(spec: { name: string; description: string; triggers: string[]; instructions: string; testCode: string }, apiKey?: string): APIResponse<{ synthesized: boolean; skill_name: string }> {
-    const auth = this.authenticate(apiKey);
+    const auth = this.authenticateScoped(apiKey);
     if (!auth.authorized) return { success: false, error: auth.error };
     const result = this.synthesizer.synthesizeAndRegister(spec);
-    return {
-      success: true,
-      data: { synthesized: result.success, skill_name: spec.name },
-    };
+    return { success: true, data: { synthesized: result.success, skill_name: spec.name } };
   }
 
   // ═══════════════════════════════════════════════════════
@@ -360,10 +577,7 @@ export class APIGateway {
 
   async handleMCPRequest(request: { method: string; params?: Record<string, unknown>; id?: number | string }): Promise<Record<string, unknown>> {
     const response = await this.mcpServer.handleRequest({
-      jsonrpc: '2.0',
-      id: request.id || 1,
-      method: request.method,
-      params: request.params,
+      jsonrpc: '2.0', id: request.id || 1, method: request.method, params: request.params,
     });
     return response as Record<string, unknown>;
   }
@@ -376,11 +590,8 @@ export class APIGateway {
     return {
       success: true,
       data: {
-        status: 'ok',
-        version: '1.23.0',
-        uptime: process.uptime(),
-        missions: this.missions.size,
-        skills: this.synthesizer.listRegisteredSkills().length,
+        status: 'ok', version: '1.24.0', uptime: process.uptime(),
+        missions: this.missions.size, skills: this.synthesizer.listRegisteredSkills().length,
       },
     };
   }
@@ -388,10 +599,20 @@ export class APIGateway {
   getConfig(): GatewayConfig { return { ...this.config }; }
   getMissionCount(): number { return this.missions.size; }
 
+  private checkRateLimit(clientId: string): { allowed: boolean; remaining: number } {
+    const now = Date.now();
+    const record = this.requestCounts.get(clientId);
+    if (!record || now > record.resetAt) {
+      this.requestCounts.set(clientId, { count: 1, resetAt: now + 60000 });
+      return { allowed: true, remaining: this.config.rateLimitPerMinute - 1 };
+    }
+    if (record.count >= this.config.rateLimitPerMinute) return { allowed: false, remaining: 0 };
+    record.count++;
+    return { allowed: true, remaining: this.config.rateLimitPerMinute - record.count };
+  }
+
   private addMissionEvent(missionId: string, stage: string, event: string, data: Record<string, unknown>): void {
     const mission = this.missions.get(missionId);
-    if (mission) {
-      mission.events.push({ stage, event, data, timestamp: Date.now() });
-    }
+    if (mission) mission.events.push({ stage, event, data, timestamp: Date.now() });
   }
 }
