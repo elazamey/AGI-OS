@@ -60,6 +60,34 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@20.19.43)(vite@6.4.3)
 
+  packages/agent-cli:
+    dependencies:
+      '@agi-os/agent-ui':
+        specifier: workspace:*
+        version: link:../agent-ui
+      '@agi-os/capability-marketplace':
+        specifier: workspace:*
+        version: link:../capability-marketplace
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skill-loader':
+        specifier: workspace:*
+        version: link:../skill-loader
+      '@agi-os/skill-registry':
+        specifier: workspace:*
+        version: link:../skill-registry
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
   packages/agent-quality:
     dependencies:
       '@agi-os/kernel':
@@ -75,6 +103,28 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@20.19.43)(vite@6.4.3)
+
+  packages/agent-ui:
+    dependencies:
+      '@agi-os/capability-marketplace':
+        specifier: workspace:*
+        version: link:../capability-marketplace
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skill-loader':
+        specifier: workspace:*
+        version: link:../skill-loader
+      '@agi-os/skill-registry':
+        specifier: workspace:*
+        version: link:../skill-registry
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
 
   packages/api-server:
     dependencies:
@@ -211,6 +261,25 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@20.19.43)(vite@6.4.3)
+
+  packages/capability-marketplace:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skill-loader':
+        specifier: workspace:*
+        version: link:../skill-loader
+      '@agi-os/skill-registry':
+        specifier: workspace:*
+        version: link:../skill-registry
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
 
   packages/certification:
     dependencies:
@@ -1266,6 +1335,38 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@20.19.43)(vite@6.4.3)
+
+  packages/skill-loader:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+      '@agi-os/skill-registry':
+        specifier: workspace:*
+        version: link:../skill-registry
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
+
+  packages/skill-registry:
+    dependencies:
+      '@agi-os/kernel':
+        specifier: workspace:*
+        version: link:../kernel
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@20.19.43)
 
   packages/skills:
     dependencies:
