@@ -30,7 +30,7 @@ describe('APIGateway — Enterprise Platform v1.24.0', () => {
     const res = gateway.health();
     expect(res.success).toBe(true);
     expect((res.data as any).status).toBe('ok');
-    expect((res.data as any).version).toBe('1.24.0');
+    expect((res.data as any).version).toBe('1.25.0');
   });
 
   it('should return config', () => {
@@ -359,8 +359,8 @@ describe('APIGateway — Enterprise Platform v1.24.0', () => {
     const res = gateway.getSelfModel('agi-os-dev-key-2026');
     expect(res.success).toBe(true);
     const model = res.data as any;
-    expect(model.version).toBe('1.24.0');
-    expect(model.capabilities).toContain('openai-compat');
+    expect(model.version).toBe('1.25.0');
+    expect(model.capabilities).toContain('openai-L4');
     expect(model.capabilities).toContain('webhooks');
   });
 

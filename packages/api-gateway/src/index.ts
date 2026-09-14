@@ -1,2 +1,2 @@
-export { APIGateway } from './Server.js';
-export type { Mission, MissionEvent, APIResponse, GatewayConfig } from './Server.js';
+export { APIGateway, openAIError } from './Server.js';
+export type { Mission, MissionEvent, APIResponse, GatewayConfig, ScopedApiKey, OpenAIError } from './Server.js';
