@@ -23,7 +23,9 @@
   "dependencies": {
     "@agi-os/kernel": "workspace:*",
     "@agi-os/governance": "workspace:*",
-    "@agi-os/orchestrator": "workspace:*"
+    "@agi-os/orchestrator": "workspace:*",
+    "@agi-os/swarm-federation": "workspace:*",
+    "@agi-os/multi-agent-eval": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

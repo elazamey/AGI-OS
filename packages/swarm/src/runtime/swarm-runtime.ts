@@ -1,8 +1,9 @@
-import { SwarmAgent } from './runtime/swarm-agent.js';
-import { SwarmKernel, type SwarmMission, type DecomposedTask } from './swarm-kernel.js';
-import { AgentRegistry } from './agent-registry.js';
-import { EventChannel } from './event-channel.js';
-import type { AgentRole } from './types.js';
+import { SwarmAgent } from './swarm-agent.js';
+import { PreflightEvaluator, type PreflightResult } from './preflight-evaluator.js';
+import { SwarmKernel, type SwarmMission, type DecomposedTask } from '../swarm-kernel.js';
+import { AgentRegistry } from '../agent-registry.js';
+import { EventChannel } from '../event-channel.js';
+import type { AgentRole } from '../types.js';
 import { generateId, now } from '@agi-os/kernel';
 
 // ============================================================================
@@ -37,12 +38,17 @@ export class SwarmRuntime {
   private executionHistory: ExecutionRecord[] = [];
   private activeCount = 0;
   private config: RuntimeConfig;
+  private preflight: PreflightEvaluator;
 
   constructor(
     private kernel: SwarmKernel,
     config?: Partial<RuntimeConfig>
   ) {
     this.config = { ...DEFAULT_RUNTIME_CONFIG, ...config };
+    this.preflight = new PreflightEvaluator({
+      maxRiskScore: this.config.enableGovernance ? 0.7 : 1.0,
+      detectConflicts: this.config.enableGovernance,
+    });
   }
 
   registerAgent(agent: SwarmAgent): void {
@@ -77,6 +83,7 @@ export class SwarmRuntime {
     mission.status = 'executing';
 
     const records: ExecutionRecord[] = [];
+    const allAgents = this.getRegisteredAgents();
 
     for (const task of mission.decomposedTasks) {
       const agent = this.findBestAgent(task);
@@ -87,6 +94,22 @@ export class SwarmRuntime {
           missionId,
           success: false,
           output: `No suitable agent for role: ${task.requiredRole}`,
+          duration: 0,
+          startedAt: now().toISOString(),
+          completedAt: now().toISOString(),
+        });
+        continue;
+      }
+
+      // Pre-flight safety evaluation
+      const preflightResult = this.preflight.evaluate(task, allAgents, agent.id);
+      if (!preflightResult.passed) {
+        records.push({
+          taskId: task.id,
+          agentId: agent.id,
+          missionId,
+          success: false,
+          output: `Pre-flight check failed: ${preflightResult.blockingReason}`,
           duration: 0,
           startedAt: now().toISOString(),
           completedAt: now().toISOString(),
@@ -110,6 +133,7 @@ export class SwarmRuntime {
       }
 
       this.activeCount++;
+      this.preflight.recordAction(agent.id, task.goal, 'execute');
       try {
         const result = await this.executeWithTimeout(agent, {
           id: task.id,

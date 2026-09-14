@@ -4,6 +4,7 @@ import { AgentRegistry } from './agent-registry.js';
 import { EventChannel } from './event-channel.js';
 import { DelegationManager } from './delegation-manager.js';
 import { AgentSupervisor } from './agent-supervisor.js';
+import { SwarmFederation } from '@agi-os/swarm-federation';
 import type { SwarmConfig, AgentRole, DelegationRequest, AgentMessage, SwarmState } from './types.js';
 
 export interface SwarmMission {
@@ -51,11 +52,13 @@ export class SwarmKernel {
   private config: SwarmConfig;
   private missions: Map<string, SwarmMission> = new Map();
   private taskDecomposer: TaskDecomposer;
+  private federation: SwarmFederation;
 
   constructor(params?: {
     governance?: GovernanceGateway;
     config?: Partial<SwarmConfig>;
     taskDecomposer?: TaskDecomposer;
+    federation?: SwarmFederation;
   }) {
     this.governance = params?.governance ?? new GovernanceGateway();
     this.config = { ...DEFAULT_CONFIG, ...params?.config };
@@ -64,20 +67,25 @@ export class SwarmKernel {
     this.delegationManager = new DelegationManager();
     this.supervisor = new AgentSupervisor(this.config.delegationTimeoutMs);
     this.taskDecomposer = params?.taskDecomposer ?? new DefaultTaskDecomposer();
+    this.federation = params?.federation ?? new SwarmFederation('local-node');
 
     if (this.config.enableGovernanceIntercept) {
-      this.channel.setGovernanceInterceptor((message: AgentMessage) => {
-        const intent = {
-          id: generateId(),
-          module: 'exec',
-          operation: 'execute',
-          target: `swarm:message:${message.type}`,
-          payload: message.payload,
-        };
-        const result = this.governance.intercept(intent);
-        return result.decision === PolicyDecision.ALLOW;
-      });
+      this.setupGovernanceIntercept();
     }
+  }
+
+  setupGovernanceIntercept(): void {
+    this.channel.setGovernanceInterceptor((message: AgentMessage) => {
+      const intent = {
+        id: generateId(),
+        module: 'exec',
+        operation: 'execute',
+        target: `swarm:message:${message.type}`,
+        payload: message.payload,
+      };
+      const result = this.governance.intercept(intent);
+      return result.decision === PolicyDecision.ALLOW;
+    });
   }
 
   registerAgent(params: {
@@ -92,6 +100,16 @@ export class SwarmKernel {
     }
     const agent = this.registry.register(params);
     this.supervisor.registerAgent(agent.id);
+
+    this.federation.registerNode({
+      id: agent.id,
+      name: agent.name,
+      address: `local-node:${agent.id}`,
+      capabilities: params.capabilities ?? [],
+      status: 'online',
+      load: 0,
+    });
+
     return agent;
   }
 
@@ -160,6 +178,8 @@ export class SwarmKernel {
       timestamp: now().toISOString(),
     });
 
+    this.federation.assignTask(taskId, agentId);
+
     return delegation;
   }
 
@@ -182,6 +202,8 @@ export class SwarmKernel {
         requiresGovernance: false,
         timestamp: now().toISOString(),
       });
+
+    this.federation.completeTask(delegation.id, result);
     }
   }
 
@@ -218,6 +240,7 @@ export class SwarmKernel {
   getChannel(): EventChannel { return this.channel; }
   getDelegationManager(): DelegationManager { return this.delegationManager; }
   getSupervisor(): AgentSupervisor { return this.supervisor; }
+  getFederation(): SwarmFederation { return this.federation; }
 }
 
 export interface TaskDecomposer {

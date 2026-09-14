@@ -5,6 +5,7 @@ export { AgentSupervisor } from './agent-supervisor.js';
 export { SwarmKernel, DefaultTaskDecomposer } from './swarm-kernel.js';
 export { SwarmAgent } from './runtime/swarm-agent.js';
 export { SwarmRuntime } from './runtime/swarm-runtime.js';
+export { PreflightEvaluator } from './runtime/preflight-evaluator.js';
 export type { TaskDecomposer, SwarmMission, DecomposedTask, SwarmResult } from './swarm-kernel.js';
 export type {
   AgentProfile,
