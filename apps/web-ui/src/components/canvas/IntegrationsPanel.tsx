@@ -82,9 +82,10 @@ export function IntegrationsPanel() {
   );
 
   useEffect(() => {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
     const checkStatus = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/integrations/status');
+        const res = await fetch(`${backendUrl}/api/integrations/status`);
         if (res.ok) {
           const data = await res.json();
           setAccounts((prev) =>
@@ -107,8 +108,9 @@ export function IntegrationsPanel() {
   const handleConnect = useCallback((providerId: string) => {
     setAccounts((prev) => prev.map((a) => a.id === providerId ? { ...a, status: 'connecting' } : a));
 
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
     const popup = window.open(
-      `/api/auth/${providerId}`,
+      `${backendUrl}/api/auth/${providerId}`,
       `oauth_${providerId}`,
       'width=500,height=600,left=200,top=100'
     );
