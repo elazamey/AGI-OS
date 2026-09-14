@@ -1,6 +1,6 @@
 {
   "name": "agi-os",
-  "version": "1.5.0",
+  "version": "1.19.0",
   "private": true,
   "description": "AGI Operating System - A zero-cost, generalizing autonomous system",
   "scripts": {
