@@ -6,13 +6,16 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "start": "npx tsx src/start.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "dev": "node dist/Server.js"
+    "demo": "npx tsx demo-integration.ts"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "openai": "^4.77.0",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
   }
