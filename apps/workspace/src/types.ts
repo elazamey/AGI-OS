@@ -3,7 +3,7 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
-  thought?: string;
+  thoughtProcess?: string;
   toolCalls?: ToolCall[];
 }
 

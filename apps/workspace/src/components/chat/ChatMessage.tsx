@@ -36,10 +36,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, language, onN
       </div>
 
       <div className={`flex flex-col max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
-        {message.thought && (
+        {message.thoughtProcess && (
           <div className="mb-2 px-3 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-[10px] text-cyan-300/80 font-mono max-w-full border-r-2 border-r-cyan-400">
             <div className="font-semibold text-cyan-400 mb-1">💭 {isAr ? 'التفكير الخوارزمي' : 'Thought Process'}</div>
-            {message.thought}
+            {message.thoughtProcess}
           </div>
         )}
 
