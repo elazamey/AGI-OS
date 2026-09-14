@@ -5,6 +5,7 @@ export class AgentRegistry {
   private agents: Map<string, AgentProfile> = new Map();
 
   register(params: {
+    id?: string;
     role: AgentRole;
     name: string;
     description?: string;
@@ -16,7 +17,7 @@ export class AgentRegistry {
     if (existing) throw new Error(`Agent ${params.name} already registered for role ${params.role}`);
 
     const agent: AgentProfile = {
-      id: generateId(),
+      id: params.id ?? generateId(),
       role: params.role,
       name: params.name,
       description: params.description ?? '',

@@ -4,6 +4,7 @@ export { DelegationManager } from './delegation-manager.js';
 export { AgentSupervisor } from './agent-supervisor.js';
 export { SwarmKernel, DefaultTaskDecomposer } from './swarm-kernel.js';
 export { SwarmAgent } from './runtime/swarm-agent.js';
+export { SwarmRuntime } from './runtime/swarm-runtime.js';
 export type { TaskDecomposer, SwarmMission, DecomposedTask, SwarmResult } from './swarm-kernel.js';
 export type {
   AgentProfile,
