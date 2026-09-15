@@ -82,10 +82,9 @@ export function IntegrationsPanel() {
   );
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space';
     const checkStatus = async () => {
       try {
-        const res = await fetch(`${backendUrl}/api/integrations/status`);
+        const res = await fetch(backendUrl('/api/integrations/status'));
         if (res.ok) {
           const data = await res.json();
           setAccounts((prev) =>
@@ -108,9 +107,8 @@ export function IntegrationsPanel() {
   const handleConnect = useCallback((providerId: string) => {
     setAccounts((prev) => prev.map((a) => a.id === providerId ? { ...a, status: 'connecting' } : a));
 
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space';
     const popup = window.open(
-      `${backendUrl}/api/auth/${providerId}`,
+      backendUrl(`/api/auth/${providerId}`),
       `oauth_${providerId}`,
       'width=500,height=600,left=200,top=100'
     );

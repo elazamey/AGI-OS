@@ -1,0 +1,20 @@
+{
+  "name": "@agi-os/production-certification",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Behavioural production certification for a deployed AGI-OS target: health, link integrity, OpenAI conformance, governance, attacks, injection, resilience, and an evidence ledger with a hard final gate.",
+  "main": "runner.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "certify": "node runner.js",
+    "certify:strict": "node runner.js --strict",
+    "certify:mock": "node runner.js --with-mock",
+    "certify:selftest:stub": "node runner.js --with-mock --mock-profile=stub",
+    "certify:selftest:dead": "node runner.js --with-mock --mock-profile=dead",
+    "mock": "node tools/mock-server.js"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

@@ -2,6 +2,7 @@
 import { useAgiStore } from '@/lib/store';
 import { Shield, Cpu, Coins, Activity, Wifi, WifiOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { backendUrl } from '@/lib/backend';
 
 export function TelemetryBar() {
   const { totalTokens, totalCostUsd, governanceStatus, messages } = useAgiStore();
@@ -10,7 +11,7 @@ export function TelemetryBar() {
   useEffect(() => {
     const check = async () => {
       try {
-        const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space/health');
+        const res = await fetch(backendUrl('/health'));
         setConnected(res.ok);
       } catch { setConnected(false); }
     };

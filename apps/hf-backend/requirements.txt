@@ -1,3 +1,5 @@
+# API + UI are one ASGI app now (see main.py / app.py), so the image needs both.
 fastapi==0.115.0
-uvicorn==0.30.0
+uvicorn[standard]==0.30.0
 pydantic==2.9.0
+gradio==4.44.0

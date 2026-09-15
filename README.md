@@ -1,8 +1,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.34.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-  <img src="https://img.shields.io/badge/tests-775+-brightgreen" alt="Tests">
-  <img src="https://img.shields.io/badge/packages-85-purple" alt="Packages">
+  <img src="https://img.shields.io/badge/tests-2700+-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/packages-80-purple" alt="Packages">
   <img src="https://img.shields.io/badge/score-90.08/100-orange" alt="Score">
 </p>
 
@@ -89,7 +89,7 @@ pip install agios
 │       └───────────── Self-Healing Loop ─────────────┘        │
 │                                                              │
 ├─────────────────────────────────────────────────────────────┤
-│  Skills: 19+ │ Packages: 85 │ Tests: 775+                   │
+│  Skills: 19+ │ Packages: 80 │ Tests: 2700+                  │
 │  LLM: Groq → OpenRouter → Ollama                            │
 │  Storage: SQLite + JSONL (zero external DB)                  │
 └─────────────────────────────────────────────────────────────┘
@@ -150,8 +150,8 @@ npx agios-deploy helm
 | POST | `/api/v1/memory/query` | Query memory |
 | GET | `/health` | Health check |
 | GET | `/metrics` | Prometheus metrics |
-| POST | `/api/auth/github` | GitHub OAuth |
-| POST | `/api/auth/google` | Google OAuth |
+| GET | `/api/auth/github` | GitHub OAuth initiation |
+| GET | `/api/auth/google` | Google OAuth initiation |
 
 ## Governance Model
 
@@ -171,6 +171,43 @@ AI Proposes → Deterministic System Decides → Evidence Proves → Gate Author
 - **Leaderboard**: https://elazamey.github.io/AGI-OS/leaderboard
 - **API Docs**: https://elazamey.github.io/AGI-OS/docs
 - **Backend**: https://elazamey-agi-system.hf.space/health
+
+## Production Certification
+
+`npm run certify:production` points a behavioural test suite at a **running**
+deployment and returns a documented gate decision. It is not the unit suite: unit
+tests certify the code, this certifies the thing that is actually serving traffic.
+
+```bash
+AGIOS_BASE_URL=https://<your-space>.hf.space npm run certify:production
+npm run certify:selftest          # boots the reference server, no deployment needed
+```
+
+| Suite | Asks |
+|---|---|
+| Health ● | does `/health` assert health, and does it stay up under repeat probes |
+| Link Integrity ● | do README links resolve, does the UI call routes the backend serves, is one backend origin referenced (not two owners' Spaces) |
+| OpenAI Compatibility ● | L0 discovery → L1 chat → L2 streaming → L3 tools/JSON → L4 error shapes |
+| Mission Execution | does a mission complete with a real artefact, an ordered ledger, readback and rollback |
+| Governance Gate ● | dangerous prompts must BLOCK or ASK — never complete silently; ordinary prompts must not be blocked |
+| Policy Attacks | override claim, jailbreak, negation/whitespace, unicode/bidi — on both surfaces |
+| Tool Abuse | unregistered tools, malicious skill synthesis, anonymous introspection, credential writes |
+| Prompt Injection | 3 untrusted-content carriers (email / scraped page / tool stdout) + system-prompt leak |
+| Self-Healing | corrupt JSON, oversized bodies, bursts, counter monotonicity |
+| End-to-End ● | the full 6-phase journey plus an audit of this run's own evidence ledger |
+
+Rules that make the verdict mean something:
+
+* **a `200` is not a pass** — every test asserts observed behaviour (block/ask status,
+  `4xx` instead of `500`, a non-stub artefact);
+* **one `FAIL` in a critical suite (●) blocks the gate** and skips everything after
+  it, so a dead target reports `BLOCKED` in seconds instead of timing out 60 times;
+* **every result is written to `evidence/<runId>.jsonl`** with its request, response
+  excerpt and the individual checks — re-auditable, credentials redacted.
+
+A `{"status":"ok"}` server that does nothing else scores `BLOCKED` with ~39 failed
+tests, not `775/775`. Exit codes: `0` PASSED · `1` DEGRADED · `2` BLOCKED.
+Full contract and configuration: [`tests/production/README.md`](tests/production/README.md).
 
 ## Contributing
 

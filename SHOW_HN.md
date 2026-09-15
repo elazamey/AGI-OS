@@ -37,8 +37,8 @@ Results:
 
 ## Tech Stack
 
-- **85 packages** in a pnpm monorepo
-- **775+ tests** across all packages
+- **80 packages** in a pnpm monorepo
+- **2700+ tests** across all packages
 - **Next.js 15** dual-view UI (Chat + Canvas)
 - **TypeScript + Python SDKs** (5-line integration)
 - **OpenAI API compatible** (L0-L4 conformance)

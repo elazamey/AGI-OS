@@ -1,0 +1,4 @@
+# certification output is machine-generated evidence; never committed
+evidence/
+reports/
+*.log

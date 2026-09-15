@@ -1,87 +1,38 @@
-import json
-import time
-import uuid
-import gradio as gr
+"""HuggingFace Space entry point.
 
-GOVERNANCE_LEVELS = ["L0", "L1", "L2", "L3", "L4", "L5"]
+The Space used to launch ``gr.ChatInterface`` directly (``demo.launch()``), which
+served the chat page on :7860 and *nothing else* — so ``/health``, ``/v1/models``
+and ``/v1/chat/completions`` all 404'd while the Space showed "Running". The API and
+the UI are now one ASGI app (``main.app_for_server``): Gradio is mounted at ``/``,
+the documented HTTP surface lives beside it.
 
-THINKING_STEPS = {
-    "default": [
-        "🔍 تحليل طلب المستخدم وتحديد السياق...",
-        "📊 تم تحديد السياق. فحص طبقة الحوكمة...",
-        "🧠 وضع خطة التنفيذ عبر MCTS Planning...",
-        "⚙️ تنفيذ العملية في البيئة المعزولة...",
-        "✅ اجتازت النتيجة بوابة الحوكمة Governance Gate"
-    ],
-    "patch": [
-        "🔍 فحص الشجرة البرمجية بحثاً عن ثغرات...",
-        "🛡️ رصد نقطة ضعف أمنية في طبقة التحقق...",
-        "🔧 توليد ترقيع ذكي مع التحقق من الحوكمة...",
-        "✅ الترقيع مُطبَّق بنجاح"
-    ],
-    "build": [
-        "📋 تحليل المتطلبات وتحديد الهيكل...",
-        "🔧 اختيار الأدوات والإعدادات المناسبة...",
-        "⚡ بدء التنفيذ في البيئة المعزولة...",
-        "✅ تم إنشاء المشروع بنجاح"
-    ],
-    "analyze": [
-        "🔍 مسح الكود وتحليل البنية...",
-        "📊 تقييم الأداء والثغرات...",
-        "📝 إعداد تقرير التحليل...",
-        "✅ التقرير جاهز"
-    ]
-}
+Run locally::
 
-RESPONSES = {
-    "default": "تمت معالجة طلبك بنجاح عبر النواة المعرفية for AGI-OS. النظام يعمل في الوضع المستقل مع حوكمة 5 طبقات.",
-    "patch": "تم رصد الثغرة البرمجية وتطبيق ترقيع ذكي آمن. نتيجة الحوكمة: 98/100. المخاطر: منخفضة.",
-    "build": "تم بناء المشروع بنجاح عبر محرك AGI-OS. الهيكل جاهز والتحقق من الحوكمة مكتمل (100/100).",
-    "analyze": "اكتمل تحليل الكود. تم اكتشاف 3 نقاط قابلة للتحسين. لا توجد ثغرات حرجة. الأداء: 78/100."
-}
+    pip install -r requirements.txt
+    python app.py            # http://127.0.0.1:7860  (UI) + /health, /v1/*, /api/v1/*
+    uvicorn main:app --reload  # API only, no gradio
+"""
 
-def detect_intent(message: str) -> str:
-    lower = message.lower()
-    if any(w in lower for w in ["ترقيع", "patch", "إصلاح", "fix", "ثغرة", "security"]):
-        return "patch"
-    if any(w in lower for w in ["بناء", "build", "create", "إنشاء", "مشروع", "project"]):
-        return "build"
-    if any(w in lower for w in ["تحليل", "analyze", "review", "فحص", "مراجعة", "code review"]):
-        return "analyze"
-    return "default"
+from __future__ import annotations
 
-def agi_chat(message, history):
-    intent = detect_intent(message)
-    thinking_steps = THINKING_STEPS.get(intent, THINKING_STEPS["default"])
-    response = RESPONSES.get(intent, RESPONSES["default"])
+import os
 
-    # Stream thinking
-    partial = ""
-    for i, step in enumerate(thinking_steps):
-        level = GOVERNANCE_LEVELS[min(i + 1, 5)]
-        partial += f"**[{level}]** {step}\n\n"
-        yield partial
-        time.sleep(0.3)
+from main import app_for_server  # re-export: HF runs this file and expects :7860
 
-    # Stream response
-    partial += f"\n---\n\n{response}"
-    yield partial
+try:  # keep `demo` importable for anything that introspects the Space object
+    from ui import demo  # noqa: F401
+except Exception:  # pragma: no cover - gradio is optional for API-only use
+    demo = None
 
-demo = gr.ChatInterface(
-    fn=agi_chat,
-    title="🧠 AGI-OS Agent",
-    description="Cognitive Agent Operating System — 5-Layer Governance • Self-Healing • Autonomous",
-    examples=[
-        "قم ببناء مشروع جديد",
-        "حلل هذا الكود",
-        "قم بتطبيق ترقيع أمني",
-        "نشر التطبيق"
-    ],
-    theme=gr.themes.Soft(
-        primary_hue="cyan",
-        secondary_hue="purple",
-    ),
-)
+__all__ = ["app_for_server", "demo"]
+
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    import uvicorn
+
+    uvicorn.run(
+        app_for_server,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 7860)),
+        log_level=os.environ.get("AGI_OS_LOG_LEVEL", "info"),
+    )

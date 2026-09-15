@@ -1,7 +1,10 @@
 import OpenAI from 'openai';
+import { BACKEND_ORIGIN } from '@/lib/backend';
 
 export const agiClient = new OpenAI({
-  baseURL: process.env.NEXT_PUBLIC_AGI_GATEWAY_URL || 'https://sayed101-agi-system.hf.space/v1',
+  // Single origin source: see lib/backend.ts (this used to point at a
+  // different owner's Space than the rest of the app, so the gateway looked dead).
+  baseURL: process.env.NEXT_PUBLIC_AGI_GATEWAY_URL || `${BACKEND_ORIGIN}/v1`,
   apiKey: process.env.NEXT_PUBLIC_AGI_API_KEY || 'agi-os-dev-key-2026',
   dangerouslyAllowBrowser: true,
 });

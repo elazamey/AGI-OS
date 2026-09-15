@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { OPENAPI_SPEC } from '@/lib/openapi-spec';
+import { BACKEND_ORIGIN } from '@/lib/backend';
 import { Book, ChevronDown, ChevronRight, Copy, Check, Send, Code, FileJson } from 'lucide-react';
 
 type HttpMethod = 'get' | 'post' | 'put' | 'delete';
@@ -42,7 +43,7 @@ export default function DocsPage() {
   };
 
   const tryIt = async (path: string, method: string) => {
-    const baseUrl = 'http://localhost:7860';
+    const baseUrl = BACKEND_ORIGIN;
     try {
       const res = await fetch(`${baseUrl}${path}`, {
         method: method.toUpperCase(),
@@ -56,7 +57,7 @@ export default function DocsPage() {
   };
 
   const generateCurl = (path: string, method: string) => {
-    const base = 'https://elazamey-agi-system.hf.space';
+    const base = BACKEND_ORIGIN;
     if (method === 'post') {
       return `curl -X POST ${base}${path} \\\n  -H "Content-Type: application/json" \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -d '{"prompt": "Analyze codebase"}'`;
     }

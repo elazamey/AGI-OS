@@ -106,4 +106,17 @@ export default tseslint.config(
     languageOptions: { sourceType: 'commonjs' },
     rules: { 'no-unused-vars': 'off' },
   },
+
+  // ---- Production certification harness: stdlib-only CommonJS (tests/production) --
+  // Listed last on purpose: flat config merges left-to-right, so this has to win
+  // over the generic `**/*.{js,cjs,mjs}` module assumption above — the harness is
+  // CommonJS run by plain `node`, with no bundler and no build step.
+  {
+    files: ['tests/production/**/*.js'],
+    languageOptions: { sourceType: 'commonjs', globals: { ...globals.node } },
+    rules: {
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
+  },
 );

@@ -3,6 +3,7 @@ import { ChatPanel } from '@/components/chat/ChatPanel';
 import { CanvasPanel } from '@/components/canvas/CanvasPanel';
 import { TelemetryBar } from '@/components/telemetry/TelemetryBar';
 import { Cpu } from 'lucide-react';
+import { BACKEND_HOST } from '@/lib/backend';
 
 export default function Home() {
   return (
@@ -25,7 +26,7 @@ export default function Home() {
             Live
           </span>
           <span className="chip chip-cyan">L4 Compliant</span>
-          <span className="text-[10px] text-agi-muted">elazamey-agi-system.hf.space</span>
+          <span className="text-[10px] text-agi-muted">{BACKEND_HOST}</span>
         </div>
       </header>
 

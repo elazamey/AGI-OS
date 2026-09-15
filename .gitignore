@@ -13,3 +13,7 @@ coverage/
 
 # test scratch dirs created by certification/mission tests
 .agi-os-test/
+
+# python artefacts (apps/hf-backend tests)
+__pycache__/
+*.pyc

@@ -20,7 +20,11 @@
     "verify": "pnpm hygiene && pnpm build && pnpm typecheck && pnpm test && pnpm lint && pnpm audit && pnpm adversarial",
     "verify:quick": "pnpm hygiene && pnpm build && pnpm typecheck && pnpm audit",
     "hygiene": "node scripts/workspace-hygiene.mjs",
-    "adversarial": "node scripts/adversarial-gate.mjs"
+    "adversarial": "node scripts/adversarial-gate.mjs",
+    "certify:production": "node tests/production/runner.js",
+    "certify:selftest": "node tests/production/runner.js --with-mock",
+    "certify:selftest:fraud": "node tests/production/runner.js --with-mock --mock-profile=stub",
+    "certify:selftest:dead": "node tests/production/runner.js --with-mock --mock-profile=dead",
   },
   "engines": {
     "node": ">=20.0.0",

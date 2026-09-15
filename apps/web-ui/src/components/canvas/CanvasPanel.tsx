@@ -3,6 +3,7 @@ import { useAgiStore } from '@/lib/store';
 import { useState, useEffect } from 'react';
 import { Activity, Shield, Cpu, Database, Zap, Clock, CheckCircle2, AlertCircle, Loader2, Wrench, Eye } from 'lucide-react';
 import { IntegrationsPanel } from './IntegrationsPanel';
+import { backendUrl } from '@/lib/backend';
 
 export function CanvasPanel() {
   const { missions, totalTokens, totalCostUsd, governanceStatus, activeTools } = useAgiStore();
@@ -13,14 +14,14 @@ export function CanvasPanel() {
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space/health');
+        const res = await fetch(backendUrl('/health'));
         const data = await res.json();
         setHealth(data.data || data);
       } catch { /* ignore */ }
     };
     const fetchModels = async () => {
       try {
-        const res = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL || 'https://sayed101-agi-system.hf.space/v1/models');
+        const res = await fetch(backendUrl('/v1/models'));
         const data = await res.json();
         setModels(data.data || []);
       } catch { /* ignore */ }
