@@ -1,0 +1,115 @@
+name: CI
+
+# What this proves: the repository is self-consistent, and the two behavioural gates
+# (production certification + control plane) actually *reject* bad output. A gate that
+# only ever passes has not been tested, so the fraud runs are part of CI: if the
+# stub/dead profiles ever go green, this job fails.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  control-plane:
+    name: Control plane (zero-install)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The suite runs on Node's built-in test runner with type stripping — no pnpm,
+      # no install, nothing to go stale. The gate has to be runnable in a bare
+      # container or people will skip it.
+      - name: Unit suites (router, free-first, failover, verification, gate, cli)
+        run: node --experimental-strip-types --test packages/provider-orchestrator/tests/*.test.ts
+      - name: Manifest declares the free-first policy
+        run: |
+          node -e '
+            const c = JSON.parse(require("fs").readFileSync("agi-os-providers.json", "utf8"));
+            if (c.policy?.freeOnly !== true) { console.error("agi-os-providers.json must declare policy.freeOnly = true"); process.exit(1); }
+            const paid = (c.models ?? []).filter((m) => m.billing === "paid" && m.enabled !== false);
+            if (paid.length) { console.error("metered model provider(s) are not allowed in the free path: " + paid.map(p => p.id)); process.exit(1); }
+            const soft = (c.models ?? []).filter((m) => m.freeTier && m.freeTier.hardStop === false);
+            if (soft.length) { console.error("a free tier without hardStop can roll into billing: " + soft.map(p => p.id)); process.exit(1); }
+            console.log("FREE_ONLY enforced over " + (c.models ?? []).length + " model providers, " + (c.agents ?? []).length + " agent adapters");
+          '
+      - name: CLI smoke (plan must not fall back to a paid provider)
+        run: |
+          node --experimental-strip-types packages/provider-orchestrator/src/cli.ts plan --json > plan.json
+          node -e '
+            const p = JSON.parse(require("fs").readFileSync("plan.json","utf8"));
+            if (!p.provider) { console.error("no provider selected: " + p.reason); process.exit(1); }
+            if (p.ladder.includes("claude-api")) { console.error("FREE_ONLY leaked a paid adapter into the model ladder"); process.exit(1); }
+            console.log("selected " + p.provider + " (score " + p.score + ") via plane " + p.plane);
+          '
+
+  certification-selftest:
+    name: Certification gate proves it can fail
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Conformant backend must PASS
+        run: node tests/production/runner.js --with-mock
+      - name: Stub backend must BLOCK
+        run: |
+          set +e
+          node tests/production/runner.js --with-mock --mock-profile=stub > stub.log 2>&1
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then echo "the certification passed a stub that fakes its answers"; cat stub.log; exit 1; fi
+          echo "stub correctly rejected (exit $code)"
+      - name: Dead backend must BLOCK
+        run: |
+          set +e
+          node tests/production/runner.js --with-mock --mock-profile=dead > dead.log 2>&1
+          code=$?
+          set -e
+          if [ "$code" -ne 2 ]; then echo "expected exit 2 (BLOCKED) against an unreachable backend, got $code"; cat dead.log; exit 1; fi
+          echo "dead backend correctly blocked (exit $code)"
+      - name: Workspace hygiene
+        run: node scripts/workspace-hygiene.mjs
+
+  workspace:
+    name: Build · typecheck · test · lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # --no-frozen-lockfile, deliberately: agi-os-providers.json's package set just
+      # grew (packages/provider-orchestrator). Once its importer entry is committed to
+      # pnpm-lock.yaml, switch this back to --frozen-lockfile so a dependency drift
+      # fails CI instead of being absorbed.
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+      - name: Build
+        run: pnpm -r --no-bail build
+      - name: Typecheck
+        run: pnpm -r --no-bail typecheck
+      - name: Test
+        run: pnpm -r --no-bail test
+      - name: Lint
+        run: pnpm lint
+      - name: Backend unit tests
+        run: cd apps/hf-backend && python3 -m unittest discover -p 'test_*.py'

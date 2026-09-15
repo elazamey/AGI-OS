@@ -1,0 +1,422 @@
+{
+  "version": 2,
+  "comment": [
+    "AGI-OS control plane. Four separated planes, two routers.",
+    "  agents[]      whole-mission adapters (Agent Router) — optional, gated on account validity",
+    "  models[]      free-first prompt APIs (Model Router) — the default operating layer",
+    "  deployments[] who publishes the artefact (observe = the platform deploys itself)",
+    "  verifications[] what proves the published artefact works",
+    "Policy: FREE_ONLY. No provider may be auto-upgraded to metered billing; a manifest that",
+    "declares a paid free-tier without a hard stop is rejected at parse time, not at bill time.",
+    "Secrets are never written here: reference an env var name in accountNotes instead. Values in",
+    "dollar-brace form are expanded at load time and MUST carry a fallback, since a silently",
+    "empty base URL turns into a mysterious connection failure.",
+    "Facts recorded 2026-09-14 from the operator's notes: OpenRouter lists openrouter/free over ~25 free",
+    "models; Gemini free tier exists with per-model/per-account limits; Cerebras grants ~5 USD trial",
+    "credit; Hugging Face grants ~0.10 USD per month then converts to pay-as-you-go; Cloudflare Workers AI",
+    "grants 10000 neurons per day with some models paid-plan only. Limits below are OUR enforced ceilings",
+    "(deliberately at or under the published value) — re-check them before trusting a rung."
+  ],
+  "policy": {
+    "freeOnly": true
+  },
+  "models": [
+    {
+      "id": "openrouter-free",
+      "label": "OpenRouter Free",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "reasoning",
+        "tool.calling",
+        "structured.output",
+        "streaming",
+        "long.context"
+      ],
+      "priority": 10,
+      "model": "openrouter/auto",
+      "baseUrl": "${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}",
+      "billing": "free-tier",
+      "freeTier": {
+        "basis": "requests-per-day",
+        "limit": 50,
+        "hardStop": true,
+        "freeModels": [
+          "openrouter/auto",
+          "deepseek/deepseek-chat-v3.1:free",
+          "meta-llama/llama-4-scout:free",
+          "qwen/qwen3-coder:free"
+        ],
+        "source": "openrouter.ai/collections/free-models — free router over ~25 models (2026-09-14)"
+      },
+      "taskFit": [
+        "coding",
+        "reasoning",
+        "chat",
+        "fast-experiment"
+      ],
+      "quota": {
+        "requestsPerMinute": 20
+      },
+      "accountNotes": "auth via env OPENROUTER_API_KEY. The :free suffix is what keeps this free; a model id without it is metered and must not be requested. freeTier.freeModels is our allowlist — add to it only after checking the model page.",
+      "costPer1kTokensUsd": 0
+    },
+    {
+      "id": "gemini-free",
+      "label": "Gemini API Free Tier",
+      "capabilities": [
+        "chat",
+        "reasoning",
+        "structured.output",
+        "streaming",
+        "vision",
+        "long.context"
+      ],
+      "priority": 20,
+      "model": "gemini-2.5-flash",
+      "baseUrl": "${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai}",
+      "billing": "free-tier",
+      "freeTier": {
+        "basis": "requests-per-day",
+        "limit": 200,
+        "hardStop": true,
+        "freeModels": [
+          "gemini-2.5-flash",
+          "gemini-2.5-flash-lite",
+          "gemini-2.0-flash"
+        ],
+        "source": "ai.google.dev/gemini-api/docs/pricing — free tier is per model and per account (2026-09-14)"
+      },
+      "taskFit": [
+        "reasoning",
+        "chat",
+        "vision"
+      ],
+      "quota": {
+        "requestsPerMinute": 10
+      },
+      "accountNotes": "auth via env GEMINI_API_KEY. Treated as quota-aware, never as unlimited: rate limits and model eligibility move with the account, so a 429 here is expected and must cool down rather than fail the mission.",
+      "costPer1kTokensUsd": 0
+    },
+    {
+      "id": "cerebras",
+      "label": "Cerebras Inference (trial credit)",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "tool.calling",
+        "streaming"
+      ],
+      "priority": 30,
+      "model": "llama3.3-70b",
+      "baseUrl": "${CEREBRAS_BASE_URL:https://api.cerebras.ai/v1}",
+      "billing": "trial-credit",
+      "freeTier": {
+        "basis": "trial-usd",
+        "limit": 5,
+        "remaining": 5,
+        "hardStop": true,
+        "source": "cerebras.ai/pricing — ~5 USD introductory credit, then metered (2026-09-14)"
+      },
+      "taskFit": [
+        "fast-experiment",
+        "coding",
+        "chat"
+      ],
+      "quota": {
+        "requestsPerMinute": 30
+      },
+      "accountNotes": "auth via env CEREBRAS_API_KEY. This is a finite grant, not a free tier: when remaining hits 0 the router must move on instead of starting a bill. Good for quick loops, not for a long mission.",
+      "costPer1kTokensUsd": 0
+    },
+    {
+      "id": "hf-inference",
+      "label": "Hugging Face Inference Providers",
+      "capabilities": [
+        "chat",
+        "text.classify",
+        "embedding",
+        "vision"
+      ],
+      "priority": 40,
+      "model": "Qwen/Qwen2.5-Coder-32B-Instruct",
+      "baseUrl": "${HF_INFERENCE_BASE_URL:https://router.huggingface.co/v1}",
+      "billing": "trial-credit",
+      "freeTier": {
+        "basis": "usd-per-month",
+        "limit": 0.1,
+        "remaining": 0.1,
+        "hardStop": true,
+        "source": "huggingface.co/docs/inference-providers/pricing — ~0.10 USD/month on the free account, pay-as-you-go after (2026-09-14)"
+      },
+      "taskFit": [
+        "chat",
+        "reasoning"
+      ],
+      "quota": {
+        "requestsPerMinute": 10
+      },
+      "accountNotes": "auth via env HF_TOKEN. hardStop is the entire point of this entry: past the monthly credit HF bills the account, so at remaining=0 the provider is refused, not retried.",
+      "costPer1kTokensUsd": 0
+    },
+    {
+      "id": "cloudflare-ai",
+      "label": "Cloudflare Workers AI",
+      "capabilities": [
+        "chat",
+        "text.classify",
+        "embedding",
+        "fast.inference"
+      ],
+      "priority": 50,
+      "model": "@cf/meta/llama-3.1-8b-instruct",
+      "baseUrl": "${CF_AI_BASE_URL:https://api.cloudflare.com/client/v4/accounts}",
+      "billing": "free-tier",
+      "freeTier": {
+        "basis": "neurons-per-day",
+        "limit": 10000,
+        "hardStop": true,
+        "freeModels": [
+          "@cf/meta/llama-3.1-8b-instruct",
+          "@cf/qwen/qwen3-32b",
+          "@cf/google/gemma-3n-e4b-it"
+        ],
+        "source": "developers.cloudflare.com/workers-ai/platform/pricing — 10000 neurons/day on the free plan; some models are paid-plan only (2026-09-14)"
+      },
+      "taskFit": [
+        "fast-experiment",
+        "chat"
+      ],
+      "enabled": false,
+      "accountNotes": "Not bound in this repository (no CLOUDFLARE_ACCOUNT_ID/HF-style token in repo secrets), so it is declared disabled rather than quietly missing: the router reports 'disabled in the manifest'. Free allowance is per MODEL as well as per day — freeTier.freeModels is checked before selection, which is what stops a paid-plan model id from silently costing neurons."
+    },
+    {
+      "id": "local",
+      "label": "Local llama.cpp / Ollama / Jan",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "reasoning",
+        "tool.calling",
+        "streaming"
+      ],
+      "priority": 60,
+      "model": "${LOCAL_MODEL:qwen2.5-coder-32b-instruct-q4}",
+      "baseUrl": "${LOCAL_INFERENCE_URL:http://127.0.0.1:8080/v1}",
+      "billing": "free-tier",
+      "freeTier": {
+        "basis": "unlimited-local",
+        "limit": 1,
+        "hardStop": true
+      },
+      "taskFit": [
+        "coding",
+        "reasoning",
+        "chat",
+        "fast-experiment"
+      ],
+      "policy": {
+        "allowAutoExecute": true,
+        "requiresApprovalFor": [
+          "deploy:production"
+        ],
+        "dataBoundary": "local-only"
+      },
+      "quota": {
+        "requestsPerMinute": 60
+      },
+      "accountNotes": "No API key, no egress, no per-call cost. Ollama speaks OpenAI-compatible on :11434/v1, llama.cpp server on :8080/v1, Jan on :13373/v1 — point LOCAL_INFERENCE_URL at whichever is up. This is the last rung before BLOCKED: it keeps a mission alive when every cloud allowance is spent, at the price of whatever the local model cannot do (no network tools, smaller context)."
+    }
+  ],
+  "agents": [
+    {
+      "id": "arena",
+      "label": "Arena Agent Mode",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "repo.work",
+        "tools.shell",
+        "deploy:production"
+      ],
+      "priority": 10,
+      "billing": "subscription",
+      "taskFit": [
+        "coding",
+        "repo.work"
+      ],
+      "policy": {
+        "allowAutoExecute": true,
+        "requiresApprovalFor": [
+          "deploy:production",
+          "repo:push"
+        ],
+        "dataBoundary": "any"
+      },
+      "accountNotes": "Interactive plane. Its tool budget running out is expected and is a routing input (cooldown), not an error: the ladder continues on the free model plane without a human. Account validity is expressed as health — probe before use."
+    },
+    {
+      "id": "codex",
+      "label": "Codex (subscription plan)",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "repo.work",
+        "tools.shell"
+      ],
+      "priority": 20,
+      "billing": "subscription",
+      "taskFit": [
+        "coding",
+        "repo.work"
+      ],
+      "policy": {
+        "allowAutoExecute": false,
+        "requiresApprovalFor": [
+          "deploy:production",
+          "repo:push",
+          "external.post"
+        ],
+        "dataBoundary": "any"
+      },
+      "accountNotes": "Optional adapter. Allowed for coding work only when the plan is valid; never the free path, and never allowed to deploy by itself."
+    },
+    {
+      "id": "claude-api",
+      "label": "Claude API",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "reasoning",
+        "repo.work",
+        "tools.shell"
+      ],
+      "priority": 30,
+      "billing": "paid",
+      "taskFit": [
+        "coding",
+        "reasoning"
+      ],
+      "policy": {
+        "allowAutoExecute": false,
+        "requiresApprovalFor": [
+          "deploy:production",
+          "repo:push",
+          "external.post",
+          "paid:override"
+        ],
+        "dataBoundary": "any"
+      },
+      "accountNotes": "Metered per call, therefore unreachable by automation. It stays in the manifest on purpose: FREE_ONLY should be provable against a real paid entry, not against an imaginary one. Using it requires a manifest edit AND an explicit paid:override approval."
+    },
+    {
+      "id": "manus",
+      "label": "Manus",
+      "capabilities": [
+        "chat",
+        "code.edit",
+        "repo.work",
+        "tools.shell",
+        "browser"
+      ],
+      "priority": 40,
+      "billing": "subscription",
+      "taskFit": [
+        "repo.work",
+        "reasoning"
+      ],
+      "policy": {
+        "allowAutoExecute": false,
+        "requiresApprovalFor": [
+          "deploy:production",
+          "repo:push",
+          "external.post"
+        ],
+        "dataBoundary": "any"
+      },
+      "accountNotes": "Credit-metered adapter: chosen for a big mission only when the account is available and valid; it is an optional adapter, not part of the free operating layer."
+    }
+  ],
+  "deployments": [
+    {
+      "id": "vercel",
+      "mode": "observe",
+      "url": "${VERCEL_PRODUCTION_URL:https://agi-os-workspace-ui.vercel.app}",
+      "markers": [
+        "AGI-OS"
+      ],
+      "backendBaseUrl": "${AGIOS_BACKEND_URL:https://elazamey-agi-system.hf.space}",
+      "notes": "Production branch = main; the Vercel Git integration owns the build. We never trigger Vercel from CI: we read x-vercel-id at verify time so the verdict names the exact build it tested. Serving 200 is NOT proof the backend works — see verifications[0]."
+    },
+    {
+      "id": "huggingface",
+      "mode": "publish",
+      "url": "${HF_SPACE_URL:https://elazamey-agi-system.hf.space}",
+      "spaceRepo": "${HUGGINGFACE_SPACE:elazamey/agi-system}",
+      "markers": [],
+      "notes": "We own this publish step (git push of apps/hf-backend), so it is a publish-mode target and requires HF_TOKEN. Space must be sdk=docker with APP_FILE=app.py. Status as of 2026-09-14: this host answers 404 and sayed101-agi-system reports 'Your space is in error' — verification is expected to FAIL until the Space is repointed. That failure is the gate working."
+    },
+    {
+      "id": "cloudflare",
+      "mode": "observe",
+      "url": "${CLOUDFLARE_PAGES_URL:}",
+      "enabled": false,
+      "notes": "No account bound in this repository's secrets, so it reports BLOCKED from the deployment plane instead of being silently absent."
+    }
+  ],
+  "verifications": [
+    {
+      "id": "functional-chain",
+      "label": "Post-deploy functional verification",
+      "capabilities": [
+        "frontend:http",
+        "frontend:html",
+        "app:marker",
+        "backend:health",
+        "backend:ready",
+        "api:models",
+        "api:chat-contract"
+      ],
+      "priority": 10,
+      "policy": {
+        "allowAutoExecute": true,
+        "requiresApprovalFor": [],
+        "dataBoundary": "any"
+      },
+      "notes": "verification.ts. GET / → 200 → valid HTML → expected marker → backend /health → /ready → /v1/models → chat contract. Produces {frontend, frontend_http, backend, backend_health, api_contract, deployment}."
+    },
+    {
+      "id": "certification",
+      "label": "Production certification suite",
+      "capabilities": [
+        "contract:openai",
+        "sse",
+        "tools",
+        "governance",
+        "memory",
+        "missions",
+        "link-integrity"
+      ],
+      "priority": 20,
+      "policy": {
+        "allowAutoExecute": true,
+        "requiresApprovalFor": [],
+        "dataBoundary": "any"
+      },
+      "notes": "tests/production (66 specs, 287 assertions). Its summary is the Deployment Gate's third input: Deploy=Ready plus Certification=BLOCKED means DEPLOYED ≠ VERIFIED → FINAL GATE = BLOCKED."
+    }
+  ],
+  "verification": {
+    "timeoutMs": 15000,
+    "requireContract": true,
+    "probeLive": false,
+    "bearerEnv": "AGIOS_API_KEY"
+  },
+  "defaultRequirement": {
+    "capabilities": [
+      "chat"
+    ],
+    "taskKind": "coding",
+    "prefer": "balanced"
+  }
+}

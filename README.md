@@ -203,11 +203,65 @@ Rules that make the verdict mean something:
 * **one `FAIL` in a critical suite (●) blocks the gate** and skips everything after
   it, so a dead target reports `BLOCKED` in seconds instead of timing out 60 times;
 * **every result is written to `evidence/<runId>.jsonl`** with its request, response
-  excerpt and the individual checks — re-auditable, credentials redacted.
+  excerpt and the individual checks — re-auditable, credentials redacted;
+* **CI proves the gate can fail** — `ci.yml` runs the suite against a *stub* that fakes
+  its answers and a *dead* origin, and fails if either one goes green.
 
 A `{"status":"ok"}` server that does nothing else scores `BLOCKED` with ~39 failed
 tests, not `775/775`. Exit codes: `0` PASSED · `1` DEGRADED · `2` BLOCKED.
 Full contract and configuration: [`tests/production/README.md`](tests/production/README.md).
+
+## Control plane: who thinks, who publishes, what counts as proof
+
+[`packages/provider-orchestrator`](packages/provider-orchestrator) sits between
+*"build feature X and deploy it"* and *"here is the verified URL"*. Agents do not learn
+Vercel, Hugging Face or Cloudflare — they pick a lane, and the router picks the API.
+
+```text
+Task → Agent Router → Free-First Model Router → capability → health → free → quota → policy → ranking
+   → execution → GitHub → Actions → Vercel / HF Space / Cloudflare Pages → verification → evidence
+```
+
+**Free API first, no automatic upgrade.** `agi-os-providers.json` declares
+`policy.freeOnly: true`, and each model provider declares the *shape* of its free
+allowance, because "free" is a different thing on every platform:
+
+| # | rung | what "free" is here |
+|---|---|---|
+| 1 | `openrouter-free` | `openrouter/free` over the `:free` model pool — model allowlist enforced |
+| 2 | `gemini-free` | free tier with per-model **and** per-account limits → quota-aware, never "unlimited" |
+| 3 | `cerebras` | ~$5 trial credit, then metered → dropped at zero, never topped up |
+| 4 | `hf-inference` | ~$0.10/month credit, then pay-as-you-go → **`hardStop` at zero** |
+| 5 | `cloudflare-ai` | 10 000 neurons/day, some models paid-plan only → the *model* is checked too |
+| 6 | `local` | llama.cpp / Ollama / Jan — no API cost, no egress; last rung before BLOCKED |
+
+Arena, Codex, Claude and Manus are **optional agent adapters**, not part of the free
+path: a `billing: "paid"` entry is refused by the router
+(`FREE_ONLY forbids an automatic upgrade`), `hardStop: false` on a metered tier is
+rejected *at config parse time*, and every exclusion is written to the evidence ledger
+with the stage that produced it. When every free rung is spent, the outcome is
+`NO_FREE_PROVIDER_AVAILABLE → BLOCKED` — no silent upgrade, no human in the loop.
+
+Ranking is computed, not configured:
+`score = capability + availability + quota + latency + reliability + task-fit − failures`,
+so a provider that loses its free limits drops down the ladder on its own. Exhaustion is
+a routing input, not an error: the failing rung is recorded, put on an exponential
+cooldown, and the mission continues on the next one.
+
+**DEPLOYED ≠ VERIFIED.** The `deployment` plane may only report `DEPLOYED` / `FAILED` /
+`BLOCKED`; `VERIFIED` comes solely from the `verification` plane. Vercel stays
+*observed*, not re-integrated: it already auto-deploys from `main`, so CI reads
+`x-vercel-id` to pin the build it is judging and then re-tests it — `Ready` with 0
+errors is platform status, and it was reported while every panel read `Disconnected`.
+Cloudflare is declared `enabled: false` because no account is bound here: it shows up in
+plans as *unavailable* rather than as a fake success or a silent absence.
+
+```bash
+npm run control:providers                 # both planes, allowances, state
+npm run control:plan -- --task=coding --json
+npm run control:verify -- --live
+npm run control:gate -- --live --strict --run-certification   # FINAL GATE, exit 0/1/2
+```
 
 ## Contributing
 

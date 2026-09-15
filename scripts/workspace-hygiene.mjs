@@ -11,6 +11,10 @@
  *   build-script  every package with a src/ directory has a `build` script
  *   exports       every package.json exposes `main` + `types`
  *   bin-runs      a declared `bin` target has a shebang and actually parses args
+ *   manifest-json every manifest in the repo is strict JSON — a trailing comma is a
+ *                 syntax error in package.json, and pnpm's own parser is lenient
+ *                 enough that CI could stay green while `require('./package.json')`,
+ *                 `node -e`, and half the toolchain break (this actually shipped)
  *
  * Usage: node scripts/workspace-hygiene.mjs [--json]
  */
@@ -44,12 +48,49 @@ function walkTs(dir) {
   return out;
 }
 
+/**
+ * Strict JSON, reported instead of thrown. Every tool reads these files differently:
+ * pnpm tolerates a trailing comma, `JSON.parse` does not, so the failure surfaces
+ * somewhere far away from the edit that caused it.
+ */
+function readManifest(file, label) {
+  const text = readFileSync(file, 'utf8');
+  try {
+    return { manifest: JSON.parse(text) };
+  } catch (error) {
+    const line = /line (\d+)/.exec(error.message)?.[1] ?? '?';
+    return { error: `not strict JSON at line ${line}: ${error.message}` };
+  }
+}
+
+// ---- manifest-json --------------------------------------------------------
+const manifestsToCheck = [join(ROOT, 'package.json'), join(ROOT, 'tsconfig.json'), join(ROOT, 'tests', 'production', 'package.json')];
+for (const app of existsSync(join(ROOT, 'apps')) ? readdirSync(join(ROOT, 'apps')) : []) {
+  for (const file of ['package.json', 'tsconfig.json']) {
+    const full = join(ROOT, 'apps', app, file);
+    if (existsSync(full)) manifestsToCheck.push(full);
+  }
+}
+for (const name of readdirSync(PKG_ROOT)) {
+  for (const file of ['package.json', 'tsconfig.json']) {
+    const full = join(PKG_ROOT, name, file);
+    if (statSync(join(PKG_ROOT, name)).isDirectory() && existsSync(full)) manifestsToCheck.push(full);
+  }
+}
+for (const file of manifestsToCheck) {
+  const relative = file.slice(ROOT.length + 1);
+  const { error } = readManifest(file, relative);
+  if (error) fail('manifest-json', relative, error);
+  else checks.passed++;
+}
+
 for (const name of readdirSync(PKG_ROOT)) {
   const dir = join(PKG_ROOT, name);
   const manifestPath = join(dir, 'package.json');
   if (!statSync(dir).isDirectory() || !existsSync(manifestPath)) continue;
 
-  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  const { manifest, error: parseError } = readManifest(manifestPath, name);
+  if (parseError) continue; // already reported by the manifest-json check
   const dev = manifest.devDependencies ?? {};
   const deps = manifest.dependencies ?? {};
   const scripts = manifest.scripts ?? {};

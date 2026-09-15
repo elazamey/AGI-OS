@@ -1,0 +1,126 @@
+name: Verify production (functional, not platform status)
+
+# Why this exists: Vercel reported the deployment as Ready, its metrics showed
+# 0 errors — and the deployed UI was rendering "Disconnected" because nothing
+# answered the backend. Platform status and functional health are different
+# questions. This job asks the second one, on a schedule, against the live URLs.
+#
+# It deliberately needs no `pnpm install`: the whole chain runs on Node's built-in
+# test runner and type stripping, so there is no dependency that can rot between runs.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: Backend origin to verify (default: the one in agi-os-providers.json)
+        required: false
+        type: string
+      frontend_url:
+        description: Frontend origin to verify
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Functional verification + certification
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Resolve origins
+        id: urls
+        env:
+          INPUT_FRONTEND: ${{ github.event.inputs.frontend_url }}
+          INPUT_BACKEND: ${{ github.event.inputs.backend_url }}
+        run: |
+          mkdir -p .agi-os
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("agi-os-providers.json", "utf8"));
+            const target = config.deployments.find((d) => d.id === "vercel") ?? {};
+            const frontend = process.env.INPUT_FRONTEND || target.url || "";
+            const backend = process.env.INPUT_BACKEND || target.backendBaseUrl || "";
+            // Written back out as the run config so the gate below judges the same
+            // origins the manual dispatch asked for, instead of the committed default.
+            config.deployments = config.deployments.map((d) => (d.id === target.id ? { ...d, url: frontend, backendBaseUrl: backend } : d));
+            config.verification = { ...config.verification, probeLive: true };
+            fs.writeFileSync(".agi-os/config.json", JSON.stringify(config, null, 2));
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `frontend=${frontend}\nbackend=${backend}\n`);
+            console.log(`frontend: ${frontend}\nbackend:  ${backend}`);
+          '
+
+      - name: Post-deploy functional chain (200 → HTML → marker → /health → /ready → /v1/models → chat contract)
+        continue-on-error: true
+        run: |
+          node --experimental-strip-types packages/provider-orchestrator/src/cli.ts verify --live \
+            --config=.agi-os/config.json \
+            --frontend='${{ steps.urls.outputs.frontend }}' \
+            --backend='${{ steps.urls.outputs.backend }}' \
+            --out=.agi-os/verify | tee verify.log
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat .agi-os/verify/verify-latest.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Production certification against the live backend
+        id: certify
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          AGIOS_BASE_URL='${{ steps.urls.outputs.backend }}' node tests/production/runner.js --json 2>&1 | tee certification.log
+          node -e '
+            const fs = require("fs");
+            const text = fs.readFileSync("certification.log", "utf8");
+            const start = text.indexOf("{\n  \"runId\"");
+            const summary = start === -1 ? { gate: "BLOCKED", reason: "runner produced no summary" } : JSON.parse(text.slice(start));
+            fs.mkdirSync("reports", { recursive: true });
+            fs.writeFileSync("reports/latest.json", JSON.stringify(summary, null, 2));
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, "| certification | " + summary.gate + " | " + (summary.passed ?? "?") + " passed · " + (summary.failed ?? "?") + " failed · " + (summary.skipped ?? "?") + " skipped |\n");
+            console.log("FINAL GATE (certification): " + summary.gate);
+          '
+
+      - name: Combine into one verdict
+        run: |
+          set +e
+          node --experimental-strip-types packages/provider-orchestrator/src/cli.ts gate --live \
+            --config=.agi-os/config.json --strict \
+            --certification=reports/latest.json \
+            --out=.agi-os/gate
+          status=$?
+          set -e
+          {
+            echo ""
+            echo "### Final gate"
+            echo ""
+            echo '```'
+            sed -n '1,40p' .agi-os/gate/gate-*.md
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=Deployment not verified::the artefact is published but not proven (DEPLOYED ≠ VERIFIED). exit=$status"
+            exit "$status"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence-${{ github.run_number }}
+          path: |
+            .agi-os
+            reports/latest.json
+            certification.log
+          if-no-files-found: warn
+          retention-days: 30

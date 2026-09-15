@@ -1,0 +1,124 @@
+name: Deployment gate
+
+# THE required status check. Everything else in CI answers "does the code build";
+# this answers "may the artefact on production be trusted".
+#
+#     DEPLOYED ≠ VERIFIED
+#
+# Vercel marks a deployment Ready when its build succeeded and the edge serves the
+# bundle. That is one input. This job adds the other two — a functional probe of the
+# live chain (frontend → marker → backend → contract) and the behavioural
+# certification suite — and takes the worst of them:
+#
+#   deployment Ready + verification BLOCKED  → FINAL GATE = BLOCKED
+#   certification FAIL anywhere             → FINAL GATE = BLOCKED
+#   everything green but a step unproven    → DEGRADED (strict: still not a pass)
+#
+# Point branch protection at the job name (`gate`) so a platform-side "success"
+# cannot satisfy it on its own.
+
+on:
+  push:
+    branches: [main]
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: Backend origin to certify
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-gate-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: gate
+    # A failed platform build needs no verdict from us; only judge deployments that
+    # the platform itself claims succeeded — that claim is exactly what we re-test.
+    if: >-
+      github.event_name != 'deployment_status' ||
+      github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Which deployment are we judging?
+        run: |
+          mkdir -p .agi-os
+          node -e '
+            const fs = require("fs");
+            const config = JSON.parse(fs.readFileSync("agi-os-providers.json", "utf8"));
+            const vercel = config.deployments.find((d) => d.id === "vercel") ?? {};
+            const backend = process.env.INPUT_BACKEND || vercel.backendBaseUrl || "";
+            if (!backend) { console.error("no backend origin configured"); process.exit(2); }
+            config.verification = { ...config.verification, probeLive: true };
+            fs.writeFileSync(".agi-os/config.json", JSON.stringify(config, null, 2));
+            console.log("frontend: " + String(vercel.url ?? ""));
+            console.log("backend:  " + backend);
+            const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
+            const platform = event.deployment_status ? "platform said: " + event.deployment_status.state + " (" + (event.deployment_status.environment ?? "?") + ", target " + String(event.deployment_status.target_url ?? "-") + ")" : process.env.GITHUB_EVENT_NAME;
+            console.log("trigger:  " + platform);
+            console.log("commit:   " + process.env.GITHUB_SHA);
+            console.log("note:     a platform \"success\" is an input to this gate, never its verdict");
+          '
+        env:
+          INPUT_BACKEND: ${{ github.event.inputs.backend_url }}
+
+      - name: Gate — observe, verify, certify, decide
+        run: |
+          set +e
+          node --experimental-strip-types packages/provider-orchestrator/src/cli.ts gate \
+            --config=.agi-os/config.json --live --strict --run-certification \
+            --baseUrl="$(node -e 'const c=require("./agi-os-providers.json");console.log((process.env.INPUT_BACKEND)||(c.deployments.find(d=>d.id==="vercel")||{}).backendBaseUrl||"")' )" \
+            --mission="${{ github.sha }}" \
+            --out=.agi-os/gate 2>&1 | tee .agi-os/gate.log
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "$status" > .agi-os/gate.exit
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 45 .agi-os/gate.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=FINAL GATE = BLOCKED::the artefact is published but not verified (or the certification failed). DEPLOYED ≠ VERIFIED — exit $status"
+            exit "$status"
+          fi
+        env:
+          INPUT_BACKEND: ${{ github.event.inputs.backend_url }}
+
+      - name: Publish the verdict artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-gate-${{ github.run_id }}
+          path: |
+            .agi-os/gate
+            .agi-os/gate.log
+            tests/production/reports
+            tests/production/evidence
+          if-no-files-found: warn
+          retention-days: 60
+
+      - name: Free-path audit
+        if: always()
+        run: |
+          # Which provider actually ran the work, and was FREE_ONLY in force while it did?
+          node -e '
+            const fs = require("fs");
+            const files = fs.readdirSync(".agi-os/gate").filter((f) => f.endsWith(".jsonl"));
+            if (!files.length) { console.log("no ledger for this run (nothing to audit)"); return; }
+            const events = fs.readFileSync(".agi-os/gate/" + files[0], "utf8").trim().split("\n").map((l) => JSON.parse(l));
+            const plan = events.find((e) => e.type === "plan");
+            if (!plan) { console.log("no mission plan recorded"); return; }
+            console.log(`mission provider: ${plan.provider ?? "NONE"} · plane ${plan.plane} · FREE_ONLY ${plan.freeOnly ? "on" : "OFF (override)"}`);
+            if (!plan.freeOnly) console.warn("::warning title=FREE_ONLY disabled::this run was allowed to use a metered provider");
+          '

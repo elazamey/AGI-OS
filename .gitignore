@@ -17,3 +17,6 @@ coverage/
 # python artefacts (apps/hf-backend tests)
 __pycache__/
 *.pyc
+
+# control-plane evidence (per-run JSONL + gate reports)
+.agi-os/

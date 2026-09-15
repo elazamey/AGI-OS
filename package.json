@@ -25,6 +25,10 @@
     "certify:selftest": "node tests/production/runner.js --with-mock",
     "certify:selftest:fraud": "node tests/production/runner.js --with-mock --mock-profile=stub",
     "certify:selftest:dead": "node tests/production/runner.js --with-mock --mock-profile=dead",
+    "control:providers": "node --experimental-strip-types packages/provider-orchestrator/src/cli.ts providers",
+    "control:plan": "node --experimental-strip-types packages/provider-orchestrator/src/cli.ts plan",
+    "control:verify": "node --experimental-strip-types packages/provider-orchestrator/src/cli.ts verify --live",
+    "control:gate": "node --experimental-strip-types packages/provider-orchestrator/src/cli.ts gate --live --strict"
   },
   "engines": {
     "node": ">=20.0.0",

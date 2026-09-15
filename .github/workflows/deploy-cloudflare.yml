@@ -1,0 +1,98 @@
+name: Deploy preview to Cloudflare Pages
+
+# Declared but not bound: this repository has no Cloudflare account wired into its
+# secrets, so the control plane lists `cloudflare` as an unbound deployment target
+# (enabled:false in agi-os-providers.json) and the router reports it as unavailable
+# instead of pretending. This workflow is the path to making it real, and it is a
+# no-op until the secrets exist — it never reports success for work it did not do.
+#
+# To enable: add secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID, add the
+# Pages project id, then flip "enabled" to true in agi-os-providers.json so
+# `agios-control gate` starts observing the Pages URL too.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Cloudflare Pages project name
+        required: false
+        default: agi-os-workspace-ui
+      branch:
+        description: Branch to publish
+        required: false
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-cloudflare
+  cancel-in-progress: false
+
+jobs:
+  bound:
+    name: Check the account binding
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      bound: ${{ steps.check.outputs.bound }}
+    steps:
+      - id: check
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then
+            echo "bound=true" >> "$GITHUB_OUTPUT"
+            echo "Cloudflare is bound; publishing will proceed"
+          else
+            echo "bound=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Cloudflare not bound::no CLOUDFLARE_API_TOKEN/CLOUDFLARE_ACCOUNT_ID on this repository. Skipping instead of faking a deploy."
+            echo '### Cloudflare: not bound' >> "$GITHUB_STEP_SUMMARY"
+            echo '' >> "$GITHUB_STEP_SUMMARY"
+            echo 'The deployment target exists in `agi-os-providers.json` with `enabled: false`, and the control plane reports it as unavailable. Add the two secrets and flip that flag to make this workflow live.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish:
+    name: Publish and verify
+    needs: bound
+    if: needs.bound.outputs.bound == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+      - run: pnpm install --no-frozen-lockfile
+      - name: Build the web UI
+        run: pnpm --filter @agi-os/web-ui build || pnpm -r --filter "./apps/web-ui/**" build
+      - name: Publish to Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_PAGES_PROJECT: ${{ github.event.inputs.project }}
+        run: |
+          out=$(ls -d apps/web-ui/out apps/web-ui/.next/static apps/web-ui/dist 2>/dev/null | head -1)
+          if [ -z "$out" ]; then echo "::error::no static export found to publish (expected apps/web-ui/out)"; exit 1; fi
+          npx --yes wrangler@latest pages deploy "$out" --project-name="$CLOUDFLARE_PAGES_PROJECT" --branch="${{ github.event.inputs.branch }}"
+      - name: Functional verification of the Pages deployment
+        run: |
+          url="https://${{ github.event.inputs.project }}.pages.dev"
+          set +e
+          node --experimental-strip-types packages/provider-orchestrator/src/cli.ts verify --live \
+            --frontend="$url" \
+            --backend="$(node -e 'const c=require("./agi-os-providers.json");const d=c.deployments.find(x=>x.id==="vercel");console.log(d.backendBaseUrl)')" \
+            --out=.agi-os/cloudflare
+          status=$?
+          set -e
+          cat .agi-os/cloudflare/verify-latest.json >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=Pages published but not verified::DEPLOYED ≠ VERIFIED (exit $status). A Pages deployment that cannot reach its backend is not certified."
+            exit "$status"
+          fi

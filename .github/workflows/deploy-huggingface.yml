@@ -1,0 +1,114 @@
+name: Deploy backend to the Hugging Face Space
+
+# Hugging Face is the one platform this repository *publishes to* (Vercel deploys
+# itself from `main` via its Git integration — see README "Why there is no
+# deploy-vercel.yml"). Because we own the push, we also own the consequence: this
+# job is not green when the push succeeded, it is green when the Space answers the
+# contract. A Space in an error state with a healthy commit is precisely the failure
+# this workflow was written to catch.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/hf-backend/**'
+      - 'agi-os-providers.json'
+      - '.github/workflows/deploy-huggingface.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-huggingface
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish and verify the Space
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: huggingface-space
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pre-flight — the Space must be configured for this entry point
+        run: |
+          test -f apps/hf-backend/app.py || { echo "::error::apps/hf-backend/app.py is missing; the Space's APP_FILE points at nothing"; exit 1; }
+          grep -q 'app_for_server' apps/hf-backend/main.py || { echo "::error::main.py no longer exposes app_for_server, which app.py composes"; exit 1; }
+          echo "APP_FILE=app.py · sdk=docker must be set on the Space; README documents the settings"
+
+      - name: Syntax and unit gate (before touching a live Space)
+        run: |
+          python3 -m compileall -q apps/hf-backend
+          cd apps/hf-backend && python3 -m unittest discover -p 'test_*.py' -v 2>&1 | tail -25
+
+      - name: Push apps/hf-backend to the Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ secrets.HF_SPACE }}
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_SPACE" ]; then
+            echo "::error title=Not bound::HF_TOKEN / HF_SPACE are not configured on this repository. Refusing to pretend the deploy ran."
+            exit 2
+          fi
+          git clone --quiet "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}" /tmp/space
+          rsync -a --delete \
+            --exclude '.venv' --exclude '__pycache__' --exclude '*.pyc' --exclude 'test_*.py' \
+            apps/hf-backend/ /tmp/space/
+          cd /tmp/space
+          git config user.email 'ci@agi-os.local'
+          git config user.name 'AGI-OS CI'
+          git add -A
+          if git diff --cached --quiet; then echo "no changes to publish"; exit 0; fi
+          git commit -q -m "sync apps/hf-backend @ ${GITHUB_SHA::7}"
+          git push -q origin main
+          echo "pushed ${GITHUB_SHA::7} to ${HF_SPACE}"
+
+      - name: Wait for the Space to answer /health
+        continue-on-error: true
+        env:
+          HF_SPACE: ${{ secrets.HF_SPACE }}
+        run: |
+          url="https://$(echo "${HF_SPACE}" | tr '/' '-').hf.space/health"
+          echo "polling $url"
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 20 "$url" || echo 000)
+            if [ "$code" = "200" ] && grep -q '"status"' /tmp/health.json; then
+              echo "healthy after ${i} attempt(s): $(head -c 200 /tmp/health.json)"
+              echo "space_origin=https://$(echo "${HF_SPACE}" | tr '/' '-').hf.space" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error title=Space never became healthy::/health did not answer 200 within 15 minutes (last status $code). This is the platform state, not a verdict — the gate below decides."
+          echo "space_origin=https://$(echo "${HF_SPACE}" | tr '/' '-').hf.space" >> "$GITHUB_ENV"
+          exit 0
+
+      - name: Verify the deployed backend (certification + control-plane gate)
+        if: env.space_origin != ''
+        run: |
+          set +e
+          node --experimental-strip-types packages/provider-orchestrator/src/cli.ts gate \
+            --live --strict --run-certification --baseUrl="${space_origin}" \
+            --out=.agi-os/gate 2>&1 | tee gate.log
+          status=${PIPESTATUS[0]}
+          set -e
+          tail -n 40 gate.log >> "$GITHUB_STEP_SUMMARY"
+          if [ "$status" -ne 0 ]; then
+            echo "::error title=Space published but not verified::the push succeeded and the gate says BLOCKED — do not treat this Space as live evidence. exit=$status"
+            exit "$status"
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hf-deploy-${{ github.run_id }}
+          path: |
+            .agi-os
+            gate.log
+            tests/production/evidence
+            tests/production/reports
+          if-no-files-found: warn
+          retention-days: 60

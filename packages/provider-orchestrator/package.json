@@ -1,0 +1,29 @@
+{
+  "name": "@agi-os/provider-orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Control plane: provider routing with health/quota failover, deployment-plane adapters, post-deploy functional verification, and the evidence-backed gate that separates DEPLOYED from VERIFIED.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "bin": {
+    "agios-control": "src/cli.ts"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node scripts/run-tests.mjs",
+    "providers": "node --experimental-strip-types src/cli.ts providers",
+    "plan": "node --experimental-strip-types src/cli.ts plan",
+    "verify": "node --experimental-strip-types src/cli.ts verify --live",
+    "gate": "node --experimental-strip-types src/cli.ts gate --strict"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.0"
+  }
+}
