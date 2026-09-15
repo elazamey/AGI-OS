@@ -1,5 +1,5 @@
 import React from 'react';
-import { PatchAuditItem } from '../../types';
+import type { PatchAuditItem } from '../../types';
 import {
   AlertTriangle,
   CheckCircle,

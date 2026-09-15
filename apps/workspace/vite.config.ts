@@ -7,5 +7,8 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    target: 'es2022',
+  },
   base: process.env.NODE_ENV === 'production' ? '/AGI-OS/workspace/' : '/',
 });

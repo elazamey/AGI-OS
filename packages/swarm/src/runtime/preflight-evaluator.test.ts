@@ -3,12 +3,13 @@ import { PreflightEvaluator } from './preflight-evaluator.js';
 import { SwarmAgent } from './swarm-agent.js';
 import { EventChannel } from '../event-channel.js';
 import type { BrainAdapter, SwarmTask } from './swarm-agent.js';
+import type { AgentRole } from '../types.js';
 
 function createBrain(): BrainAdapter {
   return { process: async () => 'ok' };
 }
 
-function createAgent(id: string, role: 'researcher' | 'coder' | 'auditor'): SwarmAgent {
+function createAgent(id: string, role: AgentRole): SwarmAgent {
   return new SwarmAgent(id, role, `Agent ${id}`, createBrain(), new EventChannel());
 }
 

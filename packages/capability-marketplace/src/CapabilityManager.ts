@@ -1,6 +1,9 @@
-import { SkillRegistry, SkillMetadata } from '@agi-os/skill-registry';
-import { SkillLoader, ParsedSkill } from '@agi-os/skill-loader';
-import { CapabilityFetcher, RegistryConfig, FetchedSkill } from './CapabilityFetcher.js';
+import type { SkillRegistry} from '@agi-os/skill-registry';
+import { SkillMetadata } from '@agi-os/skill-registry';
+import type { ParsedSkill } from '@agi-os/skill-loader';
+import { SkillLoader } from '@agi-os/skill-loader';
+import type { CapabilityFetcher} from './CapabilityFetcher.js';
+import { RegistryConfig, FetchedSkill } from './CapabilityFetcher.js';
 
 export interface MarketplaceConfig {
   registry: SkillRegistry;

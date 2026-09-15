@@ -1,5 +1,5 @@
 import React from 'react';
-import { Message } from '../../types';
+import type { Message } from '../../types';
 import { HoloOrb } from '../common/HoloOrb';
 import { User, Bot, ShieldCheck, Wrench } from 'lucide-react';
 

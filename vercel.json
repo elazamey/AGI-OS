@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "cd apps/web-ui && npx next build",
+  "outputDirectory": "apps/web-ui/out",
+  "framework": "nextjs",
+  "installCommand": "cd apps/web-ui && npm install",
+  "regions": ["iad1"]
+}

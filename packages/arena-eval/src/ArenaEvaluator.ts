@@ -3,11 +3,16 @@
 // Coordinates all benchmarks and produces final scorecard
 // ═══════════════════════════════════════════════════════
 
-import { RedTeamWorkbench, RedTeamReport } from './benchmarks/RedTeamWorkbench';
-import { GovernanceStress, GovernanceReport } from './benchmarks/GovernanceStress';
-import { SelfHealingBench, SelfHealingReport } from './benchmarks/SelfHealingBench';
-import { TokenEfficiency, TokenEfficiencyReport } from './benchmarks/TokenEfficiency';
-import { ExternalFrameworks, ComparisonReport } from './comparators/ExternalFrameworks';
+import type { RedTeamReport } from './benchmarks/RedTeamWorkbench';
+import { RedTeamWorkbench } from './benchmarks/RedTeamWorkbench';
+import type { GovernanceReport } from './benchmarks/GovernanceStress';
+import { GovernanceStress } from './benchmarks/GovernanceStress';
+import type { SelfHealingReport } from './benchmarks/SelfHealingBench';
+import { SelfHealingBench } from './benchmarks/SelfHealingBench';
+import type { TokenEfficiencyReport } from './benchmarks/TokenEfficiency';
+import { TokenEfficiency } from './benchmarks/TokenEfficiency';
+import type { ComparisonReport } from './comparators/ExternalFrameworks';
+import { ExternalFrameworks } from './comparators/ExternalFrameworks';
 
 export interface ArenaScoreCard {
   timestamp: string;

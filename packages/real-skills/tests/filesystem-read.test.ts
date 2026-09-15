@@ -4,16 +4,16 @@ import { FileSystemReadSkill } from '../src/filesystem/read.js';
 
 describe('FileSystemReadSkill', () => {
   const skill = new FileSystemReadSkill();
-  const testFile = '.agi-os-test/read-test.txt';
+  const testFile = '.agi-os-test/read-test/read-test.txt';
   const testContent = 'Hello, AGI-OS!';
 
   beforeAll(async () => {
-    await fs.mkdir('.agi-os-test', { recursive: true });
+    await fs.mkdir('.agi-os-test/read-test', { recursive: true });
     await fs.writeFile(testFile, testContent, 'utf-8');
   });
 
   afterAll(async () => {
-    await fs.rm('.agi-os-test', { recursive: true, force: true });
+    await fs.rm('.agi-os-test/read-test', { recursive: true, force: true });
   });
 
   it('should read file content', async () => {

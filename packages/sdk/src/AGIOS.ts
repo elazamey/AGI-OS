@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════
 
 import { HTTPClient, AGIOSError } from './http';
-import {
+import type {
   AGIOSConfig,
   ExecuteOptions,
   MissionResult,

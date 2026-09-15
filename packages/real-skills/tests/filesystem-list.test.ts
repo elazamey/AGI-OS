@@ -4,7 +4,7 @@ import { FileSystemListSkill } from '../src/filesystem/list.js';
 
 describe('FileSystemListSkill', () => {
   const skill = new FileSystemListSkill();
-  const testDir = '.agi-os-test/list-test';
+  const testDir = '.agi-os-test/list-test-' + process.pid;
 
   beforeAll(async () => {
     await fs.mkdir(testDir, { recursive: true });
@@ -14,7 +14,7 @@ describe('FileSystemListSkill', () => {
   });
 
   afterAll(async () => {
-    await fs.rm('.agi-os-test', { recursive: true, force: true });
+    await fs.rm('.agi-os-test/list-test-' + process.pid, { recursive: true, force: true });
   });
 
   it('should list directory entries', async () => {

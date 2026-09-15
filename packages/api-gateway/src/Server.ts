@@ -467,7 +467,7 @@ export class APIGateway {
   private registerMCPTools(): void {
     this.mcpServer.registerTool(
       { name: 'execute_mission', description: 'Execute a mission via AGI-OS', inputSchema: { prompt: { type: 'string' } } },
-      async (args) => this.executeMission(args.prompt as string),
+      async (args: Record<string, unknown>) => this.executeMission(String(args.prompt)),
     );
     this.mcpServer.registerTool(
       { name: 'list_skills', description: 'List registered skills', inputSchema: {} },
@@ -475,7 +475,7 @@ export class APIGateway {
     );
     this.mcpServer.registerTool(
       { name: 'query_memory', description: 'Query memory store', inputSchema: { query: { type: 'string' } } },
-      async (args) => this.queryMemory(args.query as string),
+      async (args: Record<string, unknown>) => this.queryMemory(String(args.query)),
     );
   }
 
@@ -546,7 +546,7 @@ export class APIGateway {
     });
 
     if (auth.key) this.recordCost(auth.key, tokens);
-    if (webhookUrl) await this.sendWebhook(webhookUrl, 'mission_completed', missionId, mission.result);
+    if (webhookUrl) await this.sendWebhook(webhookUrl, 'mission_completed', missionId, (mission.result ?? {}) as Record<string, unknown>);
 
     return { success: true, data: mission, meta: { rate_limit_remaining: rateLimit.remaining } };
   }
@@ -631,7 +631,7 @@ export class APIGateway {
 
   async handleMCPRequest(request: { method: string; params?: Record<string, unknown>; id?: number | string }): Promise<Record<string, unknown>> {
     const response = await this.mcpServer.handleRequest({
-      jsonrpc: '2.0', id: request.id || 1, method: request.method, params: request.params,
+      id: request.id || 1, method: request.method, params: request.params,
     });
     return response as Record<string, unknown>;
   }

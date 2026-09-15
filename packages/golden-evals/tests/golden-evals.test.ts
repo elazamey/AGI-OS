@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GoldenMissionEvaluator, MissionScenario } from '../src/index.js';
+import type { MissionScenario } from '../src/index.js';
+import { GoldenMissionEvaluator } from '../src/index.js';
 
 describe('GoldenMissionEvaluator', () => {
   let evaluator: GoldenMissionEvaluator;

@@ -1,6 +1,6 @@
 import { ConflictDetector } from '@agi-os/multi-agent-eval';
 import { CoordinationEvaluator } from '@agi-os/multi-agent-eval';
-import { SwarmAgent } from '../runtime/swarm-agent.js';
+import type { SwarmAgent } from '../runtime/swarm-agent.js';
 import type { SwarmTask } from '../runtime/swarm-agent.js';
 import type { DecomposedTask } from '../swarm-kernel.js';
 
@@ -81,7 +81,7 @@ export class PreflightEvaluator {
     // Check 2: Capability match
     if (this.config.requireCapabilityMatch) {
       const agent = agents.find(a => a.id === assignedAgentId);
-      const taskGoal = 'goal' in task ? task.goal : task.description;
+      const taskGoal = task.goal;
       const hasCapability = agent !== undefined && this.matchesCapability(agent, taskGoal);
       checks.push({
         name: 'capability_match',
@@ -95,7 +95,7 @@ export class PreflightEvaluator {
 
     // Check 3: Resource conflict detection
     if (this.config.detectConflicts) {
-      const taskTarget = 'goal' in task ? task.goal : (task as SwarmTask).description;
+      const taskTarget = task.goal;
       const conflicting = this.conflictDetector.detectConflicts([
         ...this.recentActions,
         { agentId: assignedAgentId, target: taskTarget, action: 'execute' },
@@ -112,7 +112,7 @@ export class PreflightEvaluator {
     }
 
     // Check 4: Task complexity risk
-    const taskGoal = 'goal' in task ? task.goal : (task as SwarmTask).description;
+    const taskGoal = task.goal;
     const complexity = this.assessComplexity(taskGoal);
     checks.push({
       name: 'complexity_assessment',

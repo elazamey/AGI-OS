@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Message, SystemLevel } from '../../types';
+import type { Message} from '../../types';
+import { SystemLevel } from '../../types';
 import { ChatMessage } from './ChatMessage';
 import { HoloOrb } from '../common/HoloOrb';
 import { SYSTEM_LEVELS } from '../../data/mockData';

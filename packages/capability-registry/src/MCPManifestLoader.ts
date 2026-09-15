@@ -2,7 +2,7 @@
 // MCPManifestLoader — Load MCP Tool Definitions
 // ═══════════════════════════════════════════════════════
 
-import { MCPManifest, RepositoryCapability } from './types';
+import type { MCPManifest, RepositoryCapability } from './types';
 
 export class MCPManifestLoader {
   private manifests: Map<string, MCPManifest> = new Map();

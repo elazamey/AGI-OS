@@ -90,7 +90,7 @@ export class MCTSPlanner {
     if (node.untriedActions.length === 0) return node;
     const action = node.untriedActions.pop()!;
     const newState = this.actionApplier(node.state, action);
-    const child = this.createNode(newState, action, node);
+    const child = this.createNode(newState, action, node, []);
     node.children.push(child);
     return child;
   }

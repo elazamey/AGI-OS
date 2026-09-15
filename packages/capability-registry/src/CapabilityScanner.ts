@@ -2,8 +2,8 @@
 // CapabilityScanner — Auto-detect repos & register
 // ═══════════════════════════════════════════════════════
 
-import { CapabilityRegistry } from './CapabilityRegistry';
-import { RepositoryCapability, CapabilityCategory, RiskLevel } from './types';
+import type { CapabilityRegistry } from './CapabilityRegistry';
+import type { RepositoryCapability, CapabilityCategory, RiskLevel } from './types';
 
 export interface RepoProfile {
   name: string;

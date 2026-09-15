@@ -108,6 +108,7 @@ export class SwarmKernel {
       capabilities: params.capabilities ?? [],
       status: 'online',
       load: 0,
+      last_seen: Date.now(),
     });
 
     return agent;

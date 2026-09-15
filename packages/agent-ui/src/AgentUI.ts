@@ -1,6 +1,8 @@
-import { SkillRegistry, SkillMetadata } from '@agi-os/skill-registry';
-import { SkillLoader, ParsedSkill, ExecutionResult } from '@agi-os/skill-loader';
-import { CapabilityManager } from '@agi-os/capability-marketplace';
+import type { SkillRegistry} from '@agi-os/skill-registry';
+import { SkillMetadata } from '@agi-os/skill-registry';
+import type { ParsedSkill, ExecutionResult } from '@agi-os/skill-loader';
+import { SkillLoader } from '@agi-os/skill-loader';
+import type { CapabilityManager } from '@agi-os/capability-marketplace';
 
 export interface UIConfig {
   title?: string;

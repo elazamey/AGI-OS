@@ -1,4 +1,4 @@
-import { SkillMetadata } from '@agi-os/skill-registry';
+import type { SkillMetadata } from '@agi-os/skill-registry';
 
 export interface RegistryConfig {
   owner: string;

@@ -1,5 +1,5 @@
 import { generateId, now } from '@agi-os/kernel';
-import { EventChannel } from '../event-channel.js';
+import type { EventChannel } from '../event-channel.js';
 import type { AgentRole, AgentMessage } from '../types.js';
 
 // ============================================================================

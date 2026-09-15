@@ -1,6 +1,4 @@
-import json
 import time
-import uuid
 import gradio as gr
 
 GOVERNANCE_LEVELS = ["L0", "L1", "L2", "L3", "L4", "L5"]
@@ -40,7 +38,7 @@ RESPONSES = {
     "analyze": "اكتمل تحليل الكود. تم اكتشاف 3 نقاط قابلة للتحسين. لا توجد ثغرات حرجة. الأداء: 78/100."
 }
 
-def detect_intent(message: str) -> str:
+def detect_intent(message):
     lower = message.lower()
     if any(w in lower for w in ["ترقيع", "patch", "إصلاح", "fix", "ثغرة", "security"]):
         return "patch"
@@ -54,33 +52,20 @@ def agi_chat(message, history):
     intent = detect_intent(message)
     thinking_steps = THINKING_STEPS.get(intent, THINKING_STEPS["default"])
     response = RESPONSES.get(intent, RESPONSES["default"])
-
-    # Stream thinking
     partial = ""
     for i, step in enumerate(thinking_steps):
         level = GOVERNANCE_LEVELS[min(i + 1, 5)]
-        partial += f"**[{level}]** {step}\n\n"
+        partial += f"[{level}] {step}\n\n"
         yield partial
         time.sleep(0.3)
-
-    # Stream response
     partial += f"\n---\n\n{response}"
     yield partial
 
 demo = gr.ChatInterface(
     fn=agi_chat,
-    title="🧠 AGI-OS Agent",
-    description="Cognitive Agent Operating System — 5-Layer Governance • Self-Healing • Autonomous",
-    examples=[
-        "قم ببناء مشروع جديد",
-        "حلل هذا الكود",
-        "قم بتطبيق ترقيع أمني",
-        "نشر التطبيق"
-    ],
-    theme=gr.themes.Soft(
-        primary_hue="cyan",
-        secondary_hue="purple",
-    ),
+    title="AGI-OS Agent",
+    description="Cognitive Agent Operating System - 5-Layer Governance - Self-Healing - Autonomous",
+    examples=["Build a project", "Analyze code", "Apply security patch", "Deploy app"],
 )
 
 if __name__ == "__main__":

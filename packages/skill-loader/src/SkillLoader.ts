@@ -1,6 +1,9 @@
-import { SkillRegistry, SkillMetadata } from '@agi-os/skill-registry';
-import { SkillParser, ParsedSkill } from './SkillParser.js';
-import { SkillExecutor, ExecutionContext, ExecutionResult } from './SkillExecutor.js';
+import type { SkillRegistry} from '@agi-os/skill-registry';
+import { SkillMetadata } from '@agi-os/skill-registry';
+import type { ParsedSkill } from './SkillParser.js';
+import { SkillParser } from './SkillParser.js';
+import type { ExecutionContext, ExecutionResult } from './SkillExecutor.js';
+import { SkillExecutor } from './SkillExecutor.js';
 
 export interface SkillLoaderConfig {
   registry: SkillRegistry;

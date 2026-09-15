@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { SwarmAgent } from './swarm-agent.js';
 import { EventChannel } from '../event-channel.js';
-import type { BrainAdapter, SwarmTask } from './swarm-agent.js';
+import type { BrainAdapter, SwarmTask, AgentState } from './swarm-agent.js';
 
 function createMockBrain(returnValue: string = 'mock output'): BrainAdapter {
   return { process: async () => returnValue };
@@ -178,7 +178,7 @@ describe('SwarmAgent', () => {
     const history = agent.stateHistory;
     expect(history).toEqual(['thinking', 'executing', 'completed']);
     // Verify it's a copy
-    history.push('fake');
+    history.push('fake' as AgentState);
     expect(agent.stateHistory).toEqual(['thinking', 'executing', 'completed']);
   });
 });

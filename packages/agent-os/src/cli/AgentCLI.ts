@@ -1,5 +1,6 @@
 import * as readline from 'readline';
-import { StreamingApiServer, ChatRequest, SSEEvent } from '../api/StreamingApiServer.js';
+import type { ChatRequest, SSEEvent } from '../api/StreamingApiServer.js';
+import { StreamingApiServer } from '../api/StreamingApiServer.js';
 import { PolicyEngine } from '../policy/PolicyEngine.js';
 
 const COLORS = {

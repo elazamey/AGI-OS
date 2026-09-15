@@ -2,7 +2,7 @@
 // HealthMonitor — Endpoint Liveness & Status Tracking
 // ═══════════════════════════════════════════════════════
 
-import { RepositoryCapability, HealthCheckResult, CapabilityStatus } from './types';
+import type { RepositoryCapability, HealthCheckResult, CapabilityStatus } from './types';
 
 export interface HealthMonitorConfig {
   timeoutMs: number;

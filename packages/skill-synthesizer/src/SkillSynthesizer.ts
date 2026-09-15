@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 export interface GeneratedSkillSpec {
@@ -182,11 +182,10 @@ ${spec.instructions}
   }
 
   listRegisteredSkills(): string[] {
-    const { readdirSync } = require('fs');
     if (!existsSync(this.registryPath)) return [];
-    return readdirSync(this.registryPath).filter((entry: string) => {
+    const entries = readdirSync(this.registryPath);
+    return entries.filter((entry: string) => {
       const entryPath = join(this.registryPath, entry);
-      const { statSync } = require('fs');
       return statSync(entryPath).isDirectory() && existsSync(join(entryPath, 'SKILL.md'));
     });
   }

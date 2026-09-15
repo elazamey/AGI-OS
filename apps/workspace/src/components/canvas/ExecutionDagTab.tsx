@@ -1,5 +1,5 @@
 import React from 'react';
-import { DagNode } from '../../types';
+import type { DagNode } from '../../types';
 import { CheckCircle, Clock, Loader, XCircle, RotateCcw } from 'lucide-react';
 
 interface ExecutionDagTabProps {

@@ -61,7 +61,7 @@ switch (target) {
   case 'docker': {
     log('Deploying AGI-OS via Docker Compose...');
     const cmd = 'docker-compose up -d --build';
-    dryRunMode ? dryRun(cmd) : run(cmd, deployDir);
+    if (dryRunMode) { dryRun(cmd); } else { run(cmd, deployDir); }
     log('Docker deployment complete!');
     info('Gateway: http://localhost:7860');
     info('Health:  http://localhost:7860/health');
@@ -94,7 +94,7 @@ switch (target) {
       process.exit(1);
     }
     const cmd = 'helm upgrade --install agios ./helm --wait --timeout 5m';
-    dryRunMode ? dryRun(cmd) : run(cmd, helmDir);
+    if (dryRunMode) { dryRun(cmd); } else { run(cmd, helmDir); }
     log('Helm deployment complete!');
     break;
   }

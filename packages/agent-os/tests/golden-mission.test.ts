@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
+import type {
   SkillDiscoveryEngine,
+  PolicyEngine} from '../src/index.js';
+import {
   MultiProviderLLMRouter,
   ExecutionSandbox,
   RollbackLedger,
-  PolicyEngine,
   StreamingApiServer,
 } from '../src/index.js';
 

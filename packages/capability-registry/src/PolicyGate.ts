@@ -2,7 +2,7 @@
 // PolicyGate — Risk Classification & Approval Gating
 // ═══════════════════════════════════════════════════════
 
-import { RepositoryCapability, RiskLevel, PolicyDecision } from './types';
+import type { RepositoryCapability, RiskLevel, PolicyDecision } from './types';
 
 export interface ExecutionContext {
   userApproved: boolean;

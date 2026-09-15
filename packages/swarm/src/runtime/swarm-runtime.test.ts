@@ -4,12 +4,13 @@ import { SwarmAgent } from './swarm-agent.js';
 import { SwarmKernel } from '../swarm-kernel.js';
 import { EventChannel } from '../event-channel.js';
 import type { BrainAdapter } from './swarm-agent.js';
+import type { AgentRole } from '../types.js';
 
 function createBrain(output: string = 'done'): BrainAdapter {
   return { process: async () => output };
 }
 
-function createAgent(id: string, role: 'researcher' | 'coder' | 'auditor'): SwarmAgent {
+function createAgent(id: string, role: AgentRole): SwarmAgent {
   return new SwarmAgent(id, role, `Agent ${id}`, createBrain(`output-${id}`), new EventChannel());
 }
 

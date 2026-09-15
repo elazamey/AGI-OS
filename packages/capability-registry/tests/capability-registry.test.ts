@@ -4,7 +4,7 @@ import { PolicyGate, ExecutionContext } from '../src/PolicyGate';
 import { HealthMonitor } from '../src/HealthMonitor';
 import { MCPManifestLoader } from '../src/MCPManifestLoader';
 import { CapabilityScanner } from '../src/CapabilityScanner';
-import { RepositoryCapability, MCPManifest } from '../src/types';
+import type { RepositoryCapability, MCPManifest } from '../src/types';
 
 const CAP_123GIT: RepositoryCapability = {
   id: '123git-devops',

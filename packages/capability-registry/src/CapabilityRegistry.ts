@@ -2,7 +2,7 @@
 // CapabilityRegistry — Core Registration & Discovery
 // ═══════════════════════════════════════════════════════
 
-import { RepositoryCapability, CapabilityCategory, CapabilityStatus } from './types';
+import type { RepositoryCapability, CapabilityCategory, CapabilityStatus } from './types';
 
 export class CapabilityRegistry {
   private capabilities: Map<string, RepositoryCapability> = new Map();

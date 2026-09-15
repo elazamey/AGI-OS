@@ -2,7 +2,7 @@
 // HTTP Client — Fetch-based with retry & timeout
 // ═══════════════════════════════════════════════════════
 
-import { APIError } from './types';
+import type { APIError } from './types';
 
 export interface HTTPClientConfig {
   baseUrl: string;
@@ -53,12 +53,13 @@ export class HTTPClient {
         clearTimeout(timeout);
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
+          const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+          const errBody = (errorData.error ?? {}) as Record<string, unknown>;
           const apiError: APIError = {
-            message: errorData.error?.message || `HTTP ${response.status}`,
-            type: errorData.error?.type || 'api_error',
-            param: errorData.error?.param,
-            code: errorData.error?.code,
+            message: String(errBody.message || `HTTP ${response.status}`),
+            type: String(errBody.type || 'api_error'),
+            param: errBody.param != null ? String(errBody.param) : undefined,
+            code: errBody.code != null ? String(errBody.code) : undefined,
           };
 
           if (response.status === 429 || response.status >= 500) {
@@ -72,7 +73,7 @@ export class HTTPClient {
           throw new AGIOSError(apiError.message, response.status, apiError);
         }
 
-        const data = await response.json();
+        const data = await response.json() as Record<string, unknown>;
         return (data.data !== undefined ? data.data : data) as T;
       } catch (err) {
         if (err instanceof AGIOSError) throw err;

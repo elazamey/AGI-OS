@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { AdversarialAttackSuite, AttackVector } from '../src/index.js';
+import type { AttackVector } from '../src/index.js';
+import { AdversarialAttackSuite } from '../src/index.js';
 
 describe('AdversarialAttackSuite', () => {
   let suite: AdversarialAttackSuite;

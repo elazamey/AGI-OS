@@ -6,7 +6,7 @@ import { GatewayModal } from './components/GatewayModal';
 import { HoloOrb } from './components/common/HoloOrb';
 import { INITIAL_DAG_NODES } from './data/mockData';
 import { executeAgiPrompt } from './lib/agi-client';
-import { DagNode, Message, PatchAuditItem } from './types';
+import type { DagNode, Message, PatchAuditItem } from './types';
 import {
   Brain,
   Code2,

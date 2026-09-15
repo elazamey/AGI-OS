@@ -2,7 +2,8 @@ import { MultiProviderLLMRouter, StreamChunk } from '../llm/MultiProviderLLMRout
 import { SkillDiscoveryEngine } from '../skills/SkillDiscoveryEngine.js';
 import { ExecutionSandbox } from '../sandbox/ExecutionSandbox.js';
 import { RollbackLedger } from '../healing/RollbackLedger.js';
-import { PolicyEngine, RiskLevel } from '../policy/PolicyEngine.js';
+import type { RiskLevel } from '../policy/PolicyEngine.js';
+import { PolicyEngine } from '../policy/PolicyEngine.js';
 
 export interface ChatRequest {
   messages: Array<{ role: string; content: string }>;

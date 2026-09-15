@@ -56,6 +56,7 @@ function runAudit() {
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,
       stdio: ['ignore', 'pipe', 'pipe'],
+      shell: true,
     });
     return JSON.parse(out);
   } catch (err) {

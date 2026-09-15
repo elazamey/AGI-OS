@@ -4,10 +4,10 @@ import { FileSystemWriteSkill } from '../src/filesystem/write.js';
 
 describe('FileSystemWriteSkill', () => {
   const skill = new FileSystemWriteSkill();
-  const testFile = '.agi-os-test/write-test.txt';
+  const testFile = '.agi-os-test/write-test/write-test.txt';
 
   afterAll(async () => {
-    await fs.rm('.agi-os-test', { recursive: true, force: true });
+    await fs.rm('.agi-os-test/write-test', { recursive: true, force: true });
   });
 
   it('should write file', async () => {
@@ -20,7 +20,7 @@ describe('FileSystemWriteSkill', () => {
   });
 
   it('should create parent directories', async () => {
-    const nestedFile = '.agi-os-test/nested/deep/file.txt';
+    const nestedFile = '.agi-os-test/write-test/nested/deep/file.txt';
     await skill.execute({ path: nestedFile, content: 'nested' }, {} as any);
     const content = await fs.readFile(nestedFile, 'utf-8');
     expect(content).toBe('nested');

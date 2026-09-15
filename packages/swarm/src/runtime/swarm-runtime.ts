@@ -1,6 +1,8 @@
-import { SwarmAgent } from './swarm-agent.js';
+import type { SwarmAgent} from './swarm-agent.js';
+import { type SwarmTask } from './swarm-agent.js';
 import { PreflightEvaluator, type PreflightResult } from './preflight-evaluator.js';
-import { SwarmKernel, type SwarmMission, type DecomposedTask } from '../swarm-kernel.js';
+import type { SwarmKernel} from '../swarm-kernel.js';
+import { type SwarmMission, type DecomposedTask } from '../swarm-kernel.js';
 import { AgentRegistry } from '../agent-registry.js';
 import { EventChannel } from '../event-channel.js';
 import type { AgentRole } from '../types.js';
@@ -173,7 +175,7 @@ export class SwarmRuntime {
 
   private async executeWithTimeout(
     agent: SwarmAgent,
-    task: { id: string; goal: string; description: string; priority?: string }
+    task: { id: string; goal: string; description: string; priority?: SwarmTask['priority'] }
   ): Promise<{ success: boolean; output: string; duration: number }> {
     return Promise.race([
       agent.executeTask(task).then(r => ({

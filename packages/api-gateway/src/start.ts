@@ -1,4 +1,5 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
+import type { IncomingMessage, ServerResponse } from 'http';
+import { createServer } from 'http';
 import { APIGateway } from './Server.js';
 import { randomBytes } from 'crypto';
 

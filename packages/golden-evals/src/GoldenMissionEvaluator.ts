@@ -144,10 +144,10 @@ export class GoldenMissionEvaluator {
     agentFn: (context: MissionScenario['context']) => Promise<string>
   ): Promise<MissionResult> {
     const startTime = Date.now();
-    let toolCalls = 0;
-    let attempts = 0;
-    let selfHealingLoops = 0;
-    let filesModified: string[] = [];
+    const toolCalls = 0;
+    const attempts = 0;
+    const selfHealingLoops = 0;
+    const filesModified: string[] = [];
 
     try {
       const result = await agentFn(scenario.context);

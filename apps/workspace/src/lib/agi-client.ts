@@ -1,4 +1,4 @@
-import { Message, DagNode, PatchAuditItem } from '../types';
+import type { Message, DagNode, PatchAuditItem } from '../types';
 
 interface GatewayConfig {
   gatewayUrl: string;
@@ -29,7 +29,7 @@ export async function executeAgiPrompt(
   options: SmartExecutionOptions,
   callbacks: StreamCallbacks,
   config: GatewayConfig
-): Promise<{}> {
+): Promise<Record<string, unknown>> {
   const { onToken, onThought, onSystemLevel, onDagUpdate, onPatchUpdate, onComplete, onError } = callbacks;
 
   try {

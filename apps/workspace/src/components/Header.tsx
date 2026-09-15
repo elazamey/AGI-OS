@@ -1,5 +1,5 @@
 import React from 'react';
-import { TelemetryState } from '../../types';
+import type { TelemetryState } from '../types';
 import {
   Activity,
   Brain,

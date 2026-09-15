@@ -1,5 +1,5 @@
 import { generateId } from '@agi-os/kernel';
-import { ParsedSkill } from './SkillParser.js';
+import type { ParsedSkill } from './SkillParser.js';
 
 export interface ExecutionContext {
   skill: ParsedSkill;
