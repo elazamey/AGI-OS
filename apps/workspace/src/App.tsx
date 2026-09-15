@@ -10,11 +10,19 @@ import type { DagNode, Message, PatchAuditItem } from './types';
 import {
   Brain,
   Code2,
+  FileTree,
   GitBranch,
+  Globe,
+  Loader2,
+  Pause,
+  Play,
   ShieldCheck,
   Sparkles,
+  Terminal,
   Zap,
 } from 'lucide-react';
+
+type CanvasTab = 'code' | 'preview' | 'terminal';
 
 export default function App() {
   const [messages, setMessages] = useState<Message[]>([
@@ -31,11 +39,12 @@ export default function App() {
   const [autonomousMode] = useState(true);
   const [dagNodes, setDagNodes] = useState<DagNode[]>(INITIAL_DAG_NODES);
   const [patches, setPatches] = useState<PatchAuditItem[]>([]);
-  const [activeTab, setActiveTab] = useState<'chat' | 'patcher' | 'dag'>('chat');
   const [isGatewayOpen, setIsGatewayOpen] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [streamingThought, setStreamingThought] = useState('');
+  const [canvasTab, setCanvasTab] = useState<CanvasTab>('code');
+  const [isPaused, setIsPaused] = useState(false);
 
   const [gatewayConfig, setGatewayConfig] = useState({
     gatewayUrl: 'https://sayed101-agi-system.hf.space',
@@ -145,31 +154,10 @@ export default function App() {
         </div>
       </header>
 
-      {/* Tabs */}
-      <nav className="flex border-b border-white/[0.06] bg-[#080a12] px-5 shrink-0">
-        {[
-          { key: 'chat' as const, icon: Sparkles, label: 'المحادثة والنواة الذكية' },
-          { key: 'patcher' as const, icon: Code2, label: `الترقيع الذاتي (${patches.length})` },
-          { key: 'dag' as const, icon: GitBranch, label: 'مسار العمليات (DAG)' },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 py-3 px-4 text-sm font-medium border-b-2 transition ${
-              activeTab === tab.key
-                ? 'border-cyan-500 text-cyan-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <tab.icon className="w-3.5 h-3.5" />
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
-        {activeTab === 'chat' && (
+      {/* Split View Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel: Agent Chat Stream */}
+        <div className="w-1/2 border-l border-white/[0.06] flex flex-col">
           <ChatPanel
             messages={messages}
             isStreaming={isStreaming}
@@ -181,29 +169,82 @@ export default function App() {
             onStopStreaming={handleStopStreaming}
             onClearHistory={handleClearHistory}
             onNavigateToTool={(tool) => {
-              if (tool.includes('patch')) setActiveTab('patcher');
-              else setActiveTab('dag');
+              if (tool.includes('patch')) setCanvasTab('code');
+              else setCanvasTab('terminal');
             }}
           />
-        )}
-        {activeTab === 'patcher' && (
-          <AutoPatcherTab
-            patches={patches}
-            language="ar"
-          />
-        )}
-        {activeTab === 'dag' && (
-          <ExecutionDagTab
-            nodes={dagNodes}
-            language="ar"
-            onReplayDag={() =>
-              setDagNodes((prev) =>
-                prev.map((n) => ({ ...n, status: 'completed' as const, executionTimeMs: Math.floor(60 + Math.random() * 120) }))
-              )
-            }
-          />
-        )}
-      </main>
+        </div>
+
+        {/* Right Panel: Live Workspace Canvas */}
+        <div className="w-1/2 flex flex-col">
+          {/* Canvas Tabs */}
+          <nav className="flex border-b border-white/[0.06] bg-[#080a12] px-4 shrink-0">
+            {[
+              { key: 'code' as const, icon: FileTree, label: 'المحرر' },
+              { key: 'preview' as const, icon: Globe, label: 'المعاينة' },
+              { key: 'terminal' as const, icon: Terminal, label: 'المحطة' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setCanvasTab(tab.key)}
+                className={`flex items-center gap-1.5 py-2.5 px-3 text-xs font-medium border-b-2 transition ${
+                  canvasTab === tab.key
+                    ? 'border-cyan-500 text-cyan-400'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            ))}
+
+            {/* Human-in-the-loop Controls */}
+            <div className="mr-auto flex items-center gap-2">
+              <button
+                onClick={() => setIsPaused(!isPaused)}
+                className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded transition ${
+                  isPaused
+                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                    : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+                }`}
+              >
+                {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+                {isPaused ? 'استئناف' : 'إيقاف مؤقت'}
+              </button>
+            </div>
+          </nav>
+
+          {/* Canvas Content */}
+          <div className="flex-1 overflow-hidden">
+            {canvasTab === 'code' && (
+              <AutoPatcherTab
+                patches={patches}
+                language="ar"
+              />
+            )}
+            {canvasTab === 'preview' && (
+              <div className="h-full flex items-center justify-center text-slate-500 text-sm">
+                <div className="text-center">
+                  <Globe className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>معاينة التطبيق المباشرة</p>
+                  <p className="text-[10px] mt-1">ستظهر هنا عند بناء الوكيل للتطبيق</p>
+                </div>
+              </div>
+            )}
+            {canvasTab === 'terminal' && (
+              <ExecutionDagTab
+                nodes={dagNodes}
+                language="ar"
+                onReplayDag={() =>
+                  setDagNodes((prev) =>
+                    prev.map((n) => ({ ...n, status: 'completed' as const, executionTimeMs: Math.floor(60 + Math.random() * 120) }))
+                  )
+                }
+              />
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Gateway Modal */}
       {isGatewayOpen && (
