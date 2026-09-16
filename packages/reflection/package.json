@@ -1,0 +1,38 @@
+{
+  "name": "@agi-os/reflection",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reflection Engine — Expected vs Actual, Root Cause, Evidence-Validated Lessons",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules"
+  },
+  "dependencies": {
+    "@agi-os/kernel": "workspace:*",
+    "@agi-os/memory": "workspace:*",
+    "@agi-os/cognition": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.3.0",
+    "vitest": "^4.1.11"
+  }
+}

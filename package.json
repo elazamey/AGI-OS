@@ -1,0 +1,44 @@
+{
+  "name": "agi-os",
+  "version": "1.34.0",
+  "private": true,
+  "description": "AGI Operating System - A zero-cost, generalizing autonomous system",
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r --no-bail typecheck",
+    "test": "pnpm -r --no-bail test",
+    "test:all": "pnpm -r --no-bail test",
+    "lint": "eslint .",
+    "lint:all": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "audit": "node scripts/audit-gate.mjs --level high",
+    "audit:strict": "node scripts/audit-gate.mjs --level low",
+    "clean": "pnpm -r clean",
+    "dashboard": "pnpm --filter @agi-os/dashboard dev",
+    "dashboard:build": "pnpm --filter @agi-os/dashboard build",
+    "mission:golden": "pnpm --filter @agi-os/certification test -- tests/missions/MISSION-001.test.ts",
+    "verify": "pnpm hygiene && pnpm build && pnpm typecheck && pnpm test && pnpm lint && node scripts/audit-gate.mjs --level high && pnpm adversarial",
+    "verify:quick": "pnpm hygiene && pnpm build && pnpm typecheck && node scripts/audit-gate.mjs --level high",
+    "hygiene": "node scripts/workspace-hygiene.mjs",
+    "adversarial": "node scripts/adversarial-gate.mjs",
+    "deploy:cf": "node scripts/deploy-cloudflare.mjs"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "overrides": {
+      "vite": "^6.4.3",
+      "esbuild": "^0.28.1",
+      "postcss": "^8.5.28"
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.70.0"
+  }
+}

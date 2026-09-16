@@ -1,0 +1,152 @@
+{
+  "name": "skills-registry",
+  "version": "2.0.0",
+  "description": "AGI-OS Dynamic Skills Registry",
+  "owner": "elazamey",
+  "skills": [
+    {
+      "id": "file-reader",
+      "name": "file-reader",
+      "description": "Read files from the filesystem",
+      "triggers": ["read", "file", "filesystem", "open"],
+      "category": "utility",
+      "status": "LOADED"
+    },
+    {
+      "id": "file-writer",
+      "name": "file-writer",
+      "description": "Write files to the filesystem",
+      "triggers": ["write", "create", "save"],
+      "category": "utility",
+      "status": "LOADED"
+    },
+    {
+      "id": "code-generator",
+      "name": "code-generator",
+      "description": "Generate code in various languages",
+      "triggers": ["generate", "code", "create", "write"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "test-runner",
+      "name": "test-runner",
+      "description": "Run tests and generate reports",
+      "triggers": ["test", "run", "pytest", "npm"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "web-browser",
+      "name": "web-browser",
+      "description": "Search and browse web pages",
+      "triggers": ["search", "web", "browse", "internet"],
+      "category": "integration",
+      "status": "LOADED"
+    },
+    {
+      "id": "database-query",
+      "name": "database-query",
+      "description": "Query and manage databases",
+      "triggers": ["query", "database", "sql", "data"],
+      "category": "integration",
+      "status": "LOADED"
+    },
+    {
+      "id": "git-manager",
+      "name": "git-manager",
+      "description": "Manage git repositories",
+      "triggers": ["git", "commit", "push", "pull", "branch"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "docker-manager",
+      "name": "docker-manager",
+      "description": "Manage Docker containers and images",
+      "triggers": ["docker", "container", "image", "compose"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "api-caller",
+      "name": "api-caller",
+      "description": "Call REST APIs and handle responses",
+      "triggers": ["api", "http", "request", "rest"],
+      "category": "integration",
+      "status": "LOADED"
+    },
+    {
+      "id": "file-search",
+      "name": "file-search",
+      "description": "Search files by name or content",
+      "triggers": ["find", "search", "grep", "locate"],
+      "category": "utility",
+      "status": "LOADED"
+    },
+    {
+      "id": "auto-patcher-and-audit",
+      "name": "auto-patcher-and-audit",
+      "description": "Scans dependencies for vulnerabilities and auto-applies non-breaking security updates",
+      "triggers": ["audit", "patch", "security-scan", "update-deps", "vulnerability"],
+      "category": "security",
+      "status": "LOADED"
+    },
+    {
+      "id": "secret-rotation-guard",
+      "name": "secret-rotation-guard",
+      "description": "Detects and rotates exposed API keys and secrets with encrypted storage",
+      "triggers": ["secrets", "rotate", "api-keys", "vault", "leak"],
+      "category": "security",
+      "status": "LOADED"
+    },
+    {
+      "id": "k8s-manifest-generator",
+      "name": "k8s-manifest-generator",
+      "description": "Generates and validates Kubernetes manifests and Helm charts in sandbox",
+      "triggers": ["kubernetes", "k8s", "helm", "deploy", "manifest"],
+      "category": "devops",
+      "status": "LOADED"
+    },
+    {
+      "id": "db-migration-verifier",
+      "name": "db-migration-verifier",
+      "description": "Validates database migrations and generates rollback plans with dry-run testing",
+      "triggers": ["migration", "database", "schema", "rollback", "drizzle", "prisma"],
+      "category": "data",
+      "status": "LOADED"
+    },
+    {
+      "id": "playwright-browser-agent",
+      "name": "playwright-browser-agent",
+      "description": "Advanced browser automation for complex forms, dynamic DOM, and data extraction",
+      "triggers": ["playwright", "browser-automation", "scrape", "forms", "extract"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "api-spec-to-sdk",
+      "name": "api-spec-to-sdk",
+      "description": "Generates typed Client SDKs from OpenAPI/Swagger specs with unit tests",
+      "triggers": ["openapi", "swagger", "sdk", "codegen", "api-client"],
+      "category": "automation",
+      "status": "LOADED"
+    },
+    {
+      "id": "vector-index-optimizer",
+      "name": "vector-index-optimizer",
+      "description": "Optimizes ChromaDB vector embeddings by removing duplicates and stale contexts",
+      "triggers": ["vector", "embeddings", "chromadb", "optimize", "context-drift"],
+      "category": "cognitive",
+      "status": "LOADED"
+    },
+    {
+      "id": "synthetic-data-generator",
+      "name": "synthetic-data-generator",
+      "description": "Generates realistic synthetic datasets for testing and evaluation",
+      "triggers": ["synthetic", "mock-data", "test-data", "generate", "dataset"],
+      "category": "data",
+      "status": "LOADED"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "system": {
+    "name": "AGI-OS Cortex Core",
+    "version": "1.25.1",
+    "tier": "L4-Autonomous",
+    "environment": "production",
+    "mode": "self-healing"
+  },
+  "gateways": {
+    "frontend": "https://elazamey.github.io/AGI-OS",
+    "backend": "https://sayed101-agi-system.hf.space",
+    "protocol": "OpenAI-Compatible (/v1/chat/completions)",
+    "fallback_providers": [
+      "Groq",
+      "OpenRouter",
+      "Ollama-Local"
+    ]
+  },
+  "governance": {
+    "policy": "deny-by-default",
+    "risk_levels": {
+      "SAFE": "auto-execute",
+      "SENSITIVE": "require-audit-log",
+      "CRITICAL": "require-explicit-user-approval"
+    },
+    "layers": 5,
+    "self_healing": {
+      "max_retries": 3,
+      "fallback_mode": "degraded-safe"
+    }
+  },
+  "capabilities": {
+    "mcp_protocol": true,
+    "dynamic_skill_discovery": true,
+    "active_tools": [
+      "code-synthesizer",
+      "sandbox-executor",
+      "vector-memory-store",
+      "rollback-ledger",
+      "dag-planner"
+    ]
+  },
+  "initial_mission": {
+    "id": "mission-bootstrap-001",
+    "prompt": "Verify backend connection, run 5-layer governance check, and initialize agent memory registry.",
+    "auto_execute": true
+  }
+}

@@ -1,0 +1,54 @@
+replicaCount: 2
+
+image:
+  repository: elazamey/agios-gateway
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 7860
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: agios.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: agios-tls
+      hosts:
+        - agios.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+env:
+  NODE_ENV: production
+  PORT: "7860"
+  MAX_SPEND: "0"
+  SANDBOX_TIMEOUT_SECONDS: "30"
+  MAX_SELF_HEALING_RETRIES: "3"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+healthCheck:
+  path: /health
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3

@@ -1,0 +1,20 @@
+{
+  "name": "@agi-os/skill-synthesizer",
+  "version": "1.0.0",
+  "description": "Autonomous Skill Synthesis and Registration Engine for AGI-OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agi-os/agent-os": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

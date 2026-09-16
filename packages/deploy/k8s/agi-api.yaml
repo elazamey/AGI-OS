@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agi-os-api
+  namespace: agi-os
+  labels:
+    app: agi-os-api
+    component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agi-os-api
+  template:
+    metadata:
+      labels:
+        app: agi-os-api
+        component: api
+    spec:
+      containers:
+        - name: agi-os-api
+          image: agi-os:latest
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: MAX_SPEND
+              value: "0"
+            - name: OLLAMA_URL
+              value: "http://ollama-service:11434"
+            - name: DATABASE_PATH
+              value: "/app/.agi-os/data/agi_os.db"
+          volumeMounts:
+            - name: agi-data
+              mountPath: /app/.agi-os/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: agi-data
+          persistentVolumeClaim:
+            claimName: agi-data-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agi-os-api-service
+  namespace: agi-os
+  labels:
+    app: agi-os-api
+spec:
+  selector:
+    app: agi-os-api
+  ports:
+    - port: 3000
+      targetPort: 3000
+      name: http
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: agi-data-pvc
+  namespace: agi-os
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

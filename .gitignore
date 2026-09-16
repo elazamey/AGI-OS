@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+reports/
+data/
+!apps/workspace/src/data/
+.next/
+out/
+.turbo/
+*.log
+coverage/
+
+# test scratch dirs created by certification/mission tests
+.agi-os-test/

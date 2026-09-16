@@ -1,0 +1,19 @@
+{
+  "$schema": "./scripts/audit-allowlist.schema.json",
+  "_comment": [
+    "Time-boxed exceptions for the dependency audit gate (scripts/audit-gate.mjs).",
+    "Every entry MUST have: package, reason, owner, expires (ISO date, max 30 days out).",
+    "An expired entry fails CI on purpose — exceptions cannot become permanent.",
+    "Do not add entries to silence a finding you have not triaged."
+  ],
+  "exceptions": [
+    {
+      "package": "vitest",
+      "id": "GHSA-5xrq-8626-4rwp",
+      "severity": "critical",
+      "reason": "23 packages depend on vitest@1.6.1; upgrading to 3.2.6 requires coordinated migration. Tracked in v1.3 roadmap.",
+      "owner": "core-team",
+      "expires": "2026-10-15"
+    }
+  ]
+}

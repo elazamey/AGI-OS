@@ -1,0 +1,25 @@
+{
+  "name": "@agi-os/deploy",
+  "version": "1.0.0",
+  "description": "One-command enterprise deployment for AGI-OS (Docker, Terraform, Helm)",
+  "main": "dist/cli.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "agios-deploy": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "files": ["dist", "docker-compose.yml", "terraform", "helm"],
+  "license": "MIT",
+  "dependencies": {
+    "@agi-os/kernel": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

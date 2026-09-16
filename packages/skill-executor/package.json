@@ -1,0 +1,22 @@
+{
+  "name": "@agi-os/skill-executor",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@agi-os/kernel": "workspace:*",
+    "@agi-os/skills": "workspace:*",
+    "@agi-os/governance": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.11"
+  }
+}
