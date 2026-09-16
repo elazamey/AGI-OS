@@ -1,0 +1,22 @@
+# ============================================================================
+# Cloudflare Pages Configuration for AGI-OS Dashboard
+# ============================================================================
+
+# Build command
+build_command = "pnpm build"
+
+# Output directory
+build_output_dir = "dist"
+
+# Environment variables
+[env.production]
+  NODE_ENV = "production"
+  NEXT_PUBLIC_API_URL = "https://agi-os-api.your-subdomain.workers.dev"
+  NEXT_PUBLIC_SUPABASE_URL = "https://your-project.supabase.co"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-anon-key"
+
+# Routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
